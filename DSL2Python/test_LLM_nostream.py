@@ -152,168 +152,148 @@ Below are two examples of the input testing scenario texts and the corresponding
 
 
 
-LLM Input1:{{In an urban intersection scenario with temporary road closure, the ego vehicle initiates a straight-through maneuver from the central intersection area (coordinates [0,0]). The scene features low traffic density with 5 surrounding vehicles exhibiting hazardous lateral maneuvers. Two specific adversarial patterns are observed: a rightward lane change at 2.65m proximity and a leftward lane change at 2.56m following distance. Road infrastructure consists of standard lanes with regulatory controls, requiring the ego vehicle to execute emergency braking to comply with the temporary closure directive.}}
-
+LLM Input1:{{In this intersection scenario, the ego vehicle maintains a straight trajectory while executing braking maneuvers. The road environment features a slow-speed lane without temporary traffic control modifications. The scenario incorporates high traffic density with approximately 50 vehicles. Two adversarial vehicles are positioned to the left of the ego vehicle, both exhibiting dangerous tailgating behavior at critically close distances (1.38m and 0.55m respectively). This configuration creates a challenging situation where the ego vehicle must navigate through dense traffic while responding to immediate rear threats from aggressive followers.}}
 LLM output1:{{
-#geometry.snippet
-from highway_env.road.lane import StraightLane
-from highway_env.road.road import RoadNetwork
+#------geometry.snippet------#
+from NGSIM_env.road.lane import StraightLane, LineType
+from NGSIM_env.road.road import RoadNetwork
 
-def construct_intersection():
-    net = RoadNetwork()
-    
-    # Main orthogonal roads
-    axis_1 = [[0, 0], [100, 0]]
-    axis_2 = [[0, -50], [0, 50]]
-    
-    # East-West lanes
-    net.add_lane("EW", "right", StraightLane(axis_1, width=3.5, line_types=(LineType.CONTINUOUS, LineType.STRIPED)))
-    net.add_lane("EW", "left", StraightLane(axis_1[::-1], width=3.5, line_types=(LineType.STRIPED, LineType.CONTINUOUS)))
-    
-    # North-South lanes (closed section)
-    closed_lane = StraightLane(axis_2, width=3.5, line_types=(LineType.CONTINUOUS, LineType.CONTINUOUS))
-    closed_lane.isClosed = True
-    net.add_lane("NS", "up", closed_lane)
-    
-    # Closure barriers
-    net.add_object(RoadObject(type='barrier', position=[0, 25], heading=0))
-    return Road(network=net, np_random=RandomState(seed=1))
-    
-#spawn.snippet
-from highway_env.vehicle.kinematics import Vehicle
+network = RoadNetwork()
+intersection_center = (0, 0)
+lane_width = 3.5
 
-ego = Vehicle(
-    road=construct_intersection(),
-    position=[0, 0],
-    heading=0,
-    speed=8.33  # ~30 km/h
-)
+# Intersection approach lane (slow speed)
+approach_lane = StraightLane([-100, 0], [100, 0],
+                           line_types=(LineType.CONTINUOUS, LineType.CONTINUOUS),
+                           width=lane_width,
+                           speed_limit=8)  # slow speed limit
+network.add_lane("north", "south", approach_lane)
 
-for _ in range(5):
-    spawn_vehicle = Vehicle(
-        road=ego.road,
-        position=ego.road.network.random_lane_position(),
-        heading=Uniform(0, 2*math.pi),
-        speed=Normal(10, 2),
-        enable_lane_change=True
-    )
-    spawn_vehicle.lane_change_controller.emergency = 0.8  # Higher urgency
+# Define intersection boundaries
+intersection_start = -15
+intersection_end = 15
+
+#------spawn.snippet------#
+from NGSIM_env.vehicle.behavior import IDMVehicle
+from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
+
+# Ego vehicle approaching intersection
+ego = HumanLikeVehicle on approach_lane at (intersection_start - 25, 0),
+    with speed 6 m/s,
+    heading 0 deg,
+    behavior=intersection_approach
+
+# Aggressive tailgating vehicles
+adversary1 = HumanLikeVehicle on approach_lane.left_lane at (intersection_start - 23.623, 1.05),
+    with speed 6.5 m/s,
+    heading 0 deg,
+    behavior=close_tailgating_left
+
+adversary2 = HumanLikeVehicle on approach_lane.left_lane at (intersection_start - 24.453, 1.05),
+    with speed 7 m/s,
+    heading 0 deg,
+    behavior=extremely_close_tailgating
+
+# High density background traffic
+background_vehicles = []
+for i in range(50):  # high traffic density
+    background_vehicles.append(IDMVehicle on network.random_lane())
     
-#behavior.snippet
-from highway_env.vehicle.behavior import IDMVehicle
+#------behavior.snippet------#
+from NGSIM_env.vehicle.controller import ControlledVehicle
 
-behavior ego_behavior:
-    if ego.lane.isClosed and ego.speed > 0:
-        ego.apply_emergency_brake()
+behavior intersection_approach:
+    when ego.position.x < intersection_start:
+        ego.control = ControlledVehicle.keep_lane()
     else:
-        maintain_constant_speed(ego, 8.33)
-    
-    monitor lane_deviation:
-        require abs(ego.lane_offset) < 0.5  # Strict lane keeping
+        ego.control = ControlledVehicle.brake(intensity=0.5)  # cautious braking
 
-behavior adversarial_behavior:
-    for v in spawned_vehicles:
-        if distance_to(ego, v) < 3.0:  # Critical proximity threshold
-            v.change_lateral(direction=Choice(['left', 'right']), immediate=True)
-            v.steering_control = AggressivePolicy()
-        
-        follow_idm(v, see_vehicles=True, see_obstacles=True)
-        override_lane_change_impulse(v, frequency=0.3)  # Increased lane change rate
+behavior close_tailgating_left:
+    adversary1.target_speed = ego.speed * 1.08
+    adversary1.control = ControlledVehicle.lane_following(distance=1.38)  # dangerous following
+
+behavior extremely_close_tailgating:
+    adversary2.target_speed = ego.speed * 1.15
+    adversary2.control = ControlledVehicle.lane_following(distance=0.55)  # extremely dangerous
+    
 }}
 
 
 
-LLM Input2:{{In the urban intersection scenario, the ego vehicle demonstrates a sudden braking maneuver while attempting to proceed straight through the junction. Key environmental factors include: a temporary closure blocking the central intersection area, specially configured lane markings with regulatory constraints, and adversarial traffic conditions featuring high density (50 vehicles) with risk-prone behaviors. Particularly, surrounding vehicles exhibit dangerous tailgating patterns (maintaining unsafe following distances <1.2m) and persistent speeding violations (velocity exceeding limits by ~9m/s). The ego vehicle initiates at coordinate (0,0) with straight trajectory intent, requiring urgent collision avoidance strategies.}}
-
+LLM Input2:{{In the intersection scenario, the ego vehicle maintains a straight trajectory while executing a braking maneuver. The road section features special lane markings but no temporary traffic control measures. The traffic density is low with only 5 background vehicles present. Two adversarial vehicles create challenging conditions: 
+1) Adversary 1 is positioned on the right side of the ego vehicle at an unsafe following distance of approximately 1.5 meters (tailgating behavior)
+2) Adversary 2 approaches from the rear attempting an aggressive left lane change at a distance of about 3 meters. The scenario tests the ego vehicle's ability to handle simultaneous rear and side threats while maintaining proper intersection approach protocol.}}
 LLM output2:{{
-#geometry.snippet
-from highway_env.road.lane import StraightLane, LineType
-from highway_env.road.road import RoadNetwork, Road
-from highway_env.vehicle.objects import Obstacle
+#------geometry.snippet------#
+from NGSIM_env.road.lane import StraightLane, LineType
+from NGSIM_env.road.road import RoadNetwork
 
-# Define intersection structure
 network = RoadNetwork()
-intersection_center = [60, 60]
-entry_length = 80
+intersection_center = (0, 0)
+lane_width = 3.5
 
-# East-West straight lanes
-ew_lane = StraightLane([0, 60], [120, 60], line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=4, special_type="regulated")
-network.add_lane("east", "west", ew_lane)
+# Intersection approach lane with special markings
+approach_lane = StraightLane([-100, 0], [100, 0],
+                           line_types=(LineType.SPECIAL, LineType.SPECIAL),
+                           width=lane_width,
+                           speed_limit=10)
+network.add_lane("north", "south", approach_lane)
 
-# North-South temporary closure
-closure_barrier = Obstacle(road=Road(network), position=intersection_center, heading=0)
-closure_barrier.collidable = True
-closure_barrier.LENGTH = 8
-closure_barrier.WIDTH = 8
+# Define intersection boundaries
+intersection_start = -15
+intersection_end = 15
+#------spawn.snippet------#
+from NGSIM_env.vehicle.behavior import IDMVehicle
+from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
 
-# Configure road access constraints
-network.get_lane(("east", "west", 0)).access_controlled = True
+# Ego vehicle approaching intersection
+ego = HumanLikeVehicle on approach_lane at (intersection_start - 25, 0),
+    with speed 8 m/s,
+    heading 0 deg,
+    behavior=intersection_approach
 
-#spawn.snippet
-from highway_env.vehicle.kinematics import Vehicle
-from highway_env.vehicle.controller import ControlledVehicle
+# Right-side tailgating adversary
+adversary1 = HumanLikeVehicle on approach_lane.right_lane at (intersection_start - 23.513, -1.05),
+    with speed 8.5 m/s,
+    heading 0 deg,
+    behavior=close_tailgating_right
 
-ego_vehicle = Vehicle(
-    road=road,
-    position=[0, 60], 
-    heading=0,  # East direction
-    speed=8,
-    target_lane_index=("east", "west", 0),
-    enable_collision_avoidance=True
-)
-ego_vehicle.color = (0, 255, 0)
+# Rear adversary attempting left lane change
+adversary2 = HumanLikeVehicle on approach_lane at (intersection_start - 28, 0),
+    with speed 9 m/s,
+    heading 0 deg,
+    behavior=aggressive_left_change
 
-# Generate adversarial traffic
-num_adversaries = 50
-for _ in range(num_adversaries):
-    spawn_lane = network.random_lane()
-    adversary = ControlledVehicle(
-        road=road,
-        position=spawn_lane.position(10 + 15*_, 0),
-        heading=spawn_lane.heading_at(10 + 15*_),
-        speed=12 + 2*_,  # Progressive speeding
-        target_lane_index=spawn_lane.index,
-        collision_distance=1.1
-    )
-    adversary.use_aggressive_model()
+# Low density background traffic
+background_vehicles = []
+for i in range(5):
+    background_vehicles.append(IDMVehicle on network.random_lane())
+    
+#------behavior.snippet------#
+from NGSIM_env.vehicle.controller import ControlledVehicle
 
-#behavior.snippet
-from highway_env.vehicle.behavior import LinearVehicle
+behavior intersection_approach:
+    when ego.position.x < intersection_start:
+        ego.control = ControlledVehicle.keep_lane()
+    else:
+        ego.control = ControlledVehicle.brake(intensity=0.6)  # controlled braking
 
-# Ego vehicle emergency protocol
-ego_vehicle.behavior = {
-    "cruise_control": False,
-    "braking_phase": {
-        "activation_distance": network.get_lane(ego_vehicle.target_lane_index).distance(ego_vehicle.position, intersection_center) - 20,
-        "deceleration_rate": 4.5
-    },
-    "lane_keeping": {
-        "steering_limit": math.radians(2),
-        "lateral_accel_limit": 0.8
-    }
-}
+behavior close_tailgating_right:
+    adversary1.target_speed = ego.speed * 1.1
+    adversary1.control = ControlledVehicle.lane_following(distance=1.5)  # dangerous tailgating
 
-# Adversary behavior models
-for vehicle in scenario.vehicles.excluding(ego_vehicle):
-    if isinstance(vehicle, ControlledVehicle):
-        vehicle.imperfection = {'longitudinal': 0.8, 'lateral': 0.5}
-        vehicle.apply_behavior(
-            tailgating={
-                'min_gap': 1.1,
-                'delta_v_gain': 0.8
-            },
-            speeding={
-                'target_speed': vehicle.speed + 8.9,
-                'accel_profile': 'aggressive'
-            }
-        )
+behavior aggressive_left_change:
+    when distanceTo(ego) < 30:
+        adversary2.control = ControlledVehicle.lane_change(direction='left', aggressive=True)
+        adversary2.target_speed = ego.speed * 1.2
+        adversary2.min_lateral_distance = 3.0  # close proximity change
 }}
 
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
 
 Based on the above description and examples, convert the following testing scenario text into the corresponding scenario representation:
 
-{The scenario simulates a medium-density urban intersection with temporary closure signs. The ego vehicle (initially positioned at (0,0) in westbound approach lane) maintains straight trajectory while executing emergency braking maneuvers. The road configuration features fast-lane specifications with right-hand traffic rules. Twenty surrounding vehicles exhibit hazardous behaviors including abrupt rightward lane changes (average offset 1.42m) and unpredictable deceleration patterns (1.49s reaction latency). Temporary barriers block the eastern intersection entry, creating constrained navigation conditions.}
+{In the intersection scenario, the ego vehicle exhibits braking behavior while attempting to proceed straight through the junction. The simulation environment features a temporary road closure at the intersection, with the ego vehicle occupying a slow-speed lane. The scenario incorporates medium traffic density with approximately 20 vehicles in the vicinity. Two adversarial vehicles are present: Vehicle [1] is positioned to the left of the ego vehicle and performs an unsafe lane change to the right (lateral offset: 1.05 meters). Vehicle [2] follows behind the ego vehicle and executes an unsafe lane change to the left (lateral offset: 1.00 meters), creating a potentially hazardous situation.}
 
 give me the code please!
 """
@@ -344,7 +324,7 @@ give me the code please!
 #     return vote_result, all_outputs
 def self_consistent_rag_chain_embedding(question, rag_chain, num_votes=5, delay=0.5):
     """
-    流式版本 + 嵌入相似度 Voting 的 Self-Consistency 实现。
+    非流式版本 + 嵌入相似度 Voting 的 Self-Consistency 实现。
     输出每个采样答案的平均相似度，并选择最“中心”的答案作为最终结果。
     """
     all_answers = []
@@ -611,7 +591,7 @@ voting_mode = "embedding"  # 可选 "embedding" 或 "structured"
 
 if voting_mode == "embedding":
     final_answer, all_candidates, all_similarities = self_consistent_rag_chain_embedding(
-        query, rag_chain, num_votes=5, delay=1
+        query, rag_chain, num_votes=2, delay=1
     )
 elif voting_mode == "structured_cluster":
     final_answer = structured_voting_pipeline_clustered(query, rag_chain, num_votes=10, delay=1)
@@ -632,9 +612,9 @@ print(final_answer)
 
 
 # 根据 final_answer 转换为 highway_env code
-converted_code = convert_dsl_to_highway_env_code(final_answer)
+# converted_code = convert_dsl_to_highway_env_code(final_answer)
 # convert_dsl_to_highway_env_code(final_answer, api_key="sk-xxxxx")
 
 # 打印或保存结果
-print("\n==== 转换后的 Highway-Env Python 代码 ====\n")
-print(converted_code)
+# print("\n==== 转换后的 Highway-Env Python 代码 ====\n")
+# print(converted_code)

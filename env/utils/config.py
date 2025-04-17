@@ -1,0 +1,6 @@
+MapPath = '/home/chuan/work/TypicalScenarioExtraction/data/datasets/Interaction/maps/DR_USA_Intersection_MA.osm'
+ProjectDir = '/home/chuan/work/TypicalScenarioExtraction'
+statistics_path = '/home/chuan/work/TypicalScenarioExtraction/data/interaction_data/scenario_data/statistics_data'
+pic_save_path = '/home/chuan/work/TypicalScenarioExtraction/data/interaction_data/scenario_data/pic'
+pedestrian_statistics_path = '/home/chuan/work/TypicalScenarioExtraction/data/pedestrian_data/scenario_data/statistics_data'
+pedestrian_pic_save_path = '/home/chuan/work/TypicalScenarioExtraction/data/pedestrian_data/scenario_data/pic'
