@@ -3,7 +3,9 @@ from pathlib import Path
 from typing import List, Optional
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-
+api_path = os.path.join(ROOT_DIR, 'API_Keys.txt')
+with open(api_path, 'r') as file:
+    api_key = file.read().strip()
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -93,7 +95,7 @@ And here is the DSL:
 
 def call_llm_for_code(prompt: str) -> str:
     llm = ChatOpenAI(
-        openai_api_key="sk-4d8332cd221a45d9b505e5f93d7122b2",
+        openai_api_key=api_key,
         openai_api_base="https://api.deepseek.com/v1",
         model="deepseek-reasoner",
         temperature=0.4

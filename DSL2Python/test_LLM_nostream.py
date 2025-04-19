@@ -8,7 +8,9 @@ pip install scikit-learn
 import os
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'  # 使用镜像源
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-
+api_path = os.path.join(ROOT_DIR, 'API_Keys.txt')
+with open(api_path, 'r') as file:
+    api_key = file.read().strip()
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -26,6 +28,7 @@ from collections import defaultdict
 from collections import defaultdict, Counter
 import time
 from difflib import SequenceMatcher
+from json_find import find_similar_descriptions
 
 from dsl_to_env_generator_test import convert_dsl_to_highway_env_code
 
@@ -111,7 +114,7 @@ Syntax Alignment Checking:
 
 # DeepSeek
 llm = ChatOpenAI(
-    openai_api_key="sk-4d8332cd221a45d9b505e5f93d7122b2",
+    openai_api_key=api_key,
     openai_api_base="https://api.deepseek.com/v1",
     model="deepseek-reasoner",  # "deepseek-chat" 或 "deepseek-reasoner"
     temperature=0.6
@@ -138,6 +141,17 @@ rag_chain = RetrievalQA.from_chain_type(
 )
 
 # === 问题 ===
+description_text = "In an urban intersection scenario reconstructed from the [vehicle_tracks_000_trajectory_set_28.json] dataset, the ego vehicle exhibits consecutive braking maneuvers while maintaining straight-line motion through a fast-lane section with temporary traffic control measures. The medium-density traffic environment (20 vehicles) introduces two adversarial agents: Adversarial Vehicle 1 executes an unsafe leftward lane change from the right adjacent lane at 3.61m lateral distance, while Adversarial Vehicle 2 performs sudden braking maneuvers with 2.75s delayed response time on the same lateral plane."
+# 调用函数获取最相似的描述
+json_path = os.path.join(ROOT_DIR, "Corpus/Description/description_fileinfo_pairs.json")
+similar_descriptions = find_similar_descriptions(description_text, json_path, top_k=3)
+
+# 输出结果
+for item in similar_descriptions:
+    print(f"DataSet: {item['DataSet']}")
+    print(f"Description: {item['Description']}")
+    print(f"Similarity: {item['Similarity']:.4f}\n")
+
 query = """
 Assuming you are an expert in autonomous driving testing, your task is to generate scenario representation from the following given testing scenario description text based on the Domain-Specific Language.
 
@@ -268,8 +282,7 @@ adv2_behavior = SpeedingBehavior:
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
 
 Based on the above description and examples, convert the following testing scenario text into the corresponding scenario representation:
-
-{In an urban intersection scenario reconstructed from the [vehicle_tracks_000_trajectory_set_28.json] dataset, the ego vehicle exhibits consecutive braking maneuvers while maintaining straight-line motion through a fast-lane section with temporary traffic control measures. The medium-density traffic environment (20 vehicles) introduces two adversarial agents: Adversarial Vehicle 1 executes an unsafe leftward lane change from the right adjacent lane at 3.61m lateral distance, while Adversarial Vehicle 2 performs sudden braking maneuvers with 2.75s delayed response time on the same lateral plane.}
+{description_text}
 
 give me the code please!
 """

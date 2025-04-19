@@ -7,6 +7,9 @@ import os
 
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+api_path = os.path.join(ROOT_DIR, 'API_Keys.txt')
+with open(api_path, 'r') as file:
+    api_key = file.read().strip()
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader
@@ -15,7 +18,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 client = openai.OpenAI(
-    api_key="sk-4d8332cd221a45d9b505e5f93d7122b2",
+    api_key=api_key,
     base_url="https://api.deepseek.com/v1"
 )
 
@@ -42,14 +45,17 @@ def extract_section(text, keyword):
     match = re.search(pattern, text, re.DOTALL)
     return match.group(1).strip() if match else ""
 
-def load_highway_code_index(index_path=os.path.join(ROOT_DIR, "code_index")):
-    if os.path.exists(index_path):
+def load_highway_code_index(index_path=os.path.join(ROOT_DIR, "Corpus/code_index")):
+    index_file_path = os.path.join(index_path, "index.faiss")
+    if os.path.exists(index_file_path):
+        print("加载现有索引文件...")
         return FAISS.load_local(
-            index_path,
+            index_file_path,
             HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L6-v2"),
             allow_dangerous_deserialization=True
         )
 
+    print("索引文件不存在，生成新的索引...")
     repo_path = os.path.join(ROOT_DIR, "env")
     py_files = []
     for root, _, files in os.walk(repo_path):
@@ -78,7 +84,9 @@ def load_highway_code_index(index_path=os.path.join(ROOT_DIR, "code_index")):
     #         print("警告：存在空 chunk")
 
     store = FAISS.from_documents(chunks, HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L6-v2"))
-    store.save_local(index_path)
+    store.save_local(index_file_path)
+    print(f"索引已保存到 {index_file_path}")
+    # store.save_local(index_path)
     return store
 
 # === 读取原始语料 Excel 文件 ===
@@ -118,16 +126,23 @@ def format_snippet_examples(templates, max_examples=6):
 # === 加载或构建 highway-env 中的代码向量索引 ===
 code_store = load_highway_code_index()
 
+# === 存储 original 和 file_info 的配对关系 ===
+description_fileinfo_pairs = []
 
 # === 主处理循环 ===
 for i, row in df.iterrows():
     original = row["final_natural_language"]
     file_info = row["file_name"]
+
+    description_fileinfo_pairs.append({
+        "original_description": original,
+        "file_name": file_info
+    })
     # 拼接 few-shot 记忆库示例
     few_shot_examples = format_snippet_examples(scenic_templates)
 
     # 检索相关代码片段作为上下文
-    rag_context = code_store.similarity_search(original, k=20)
+    rag_context = code_store.similarity_search(original, k=4)
     rag_snippets = "\n\n".join([doc.page_content for doc in rag_context])
     # print(rag_snippets)
 
@@ -135,7 +150,12 @@ for i, row in df.iterrows():
 你是一个自动驾驶仿真专家，请完成以下任务：
 
 1. 润色自然语言场景描述：将下面的原始自然语言驾驶场景描述转换为清晰、自然且具有仿真视角的英文描述（段落形式）。必须保持语义一致性，原意不能更改。
-2. 你应使用我们项目 highway-env 已有的基础类，避免引入过多自定义类，以保证结构统一与后续可维护性。例如:
+2. **结构要求**：
+   - geometry.snippet 定义一级场景：主车的位置，和运动方向（不需要规定路网结构，给一个读取osm地图的结构就行了）.并告诉我准确的是基于哪个真实数据集，读取这个真实数据集名称,这个名称用[ ]标注出来。
+   - spawn.snippet 定义初始车辆（主车和对抗车的类型、相对位置、朝向等信息）。
+   - behavior.snippet 描述车辆的行为（主车和对抗车）
+3. 确保三个 DSL 模块的语义与润色后的自然语言描述一致，DSL 中每个元素都应有清晰语义映射。
+4. 你应在每一节的最开始使用我们项目 highway-env 已有的基础类进行引入，并且避免引入过多自定义类，以保证结构统一与后续可维护性。例如:
 from NGSIM_env import utils
 from NGSIM_env.envs.common.abstract import AbstractEnv
 from NGSIM_env.road.road import Road, RoadNetwork
@@ -148,11 +168,6 @@ import lanelet2
 from threading import Thread
 from shapely.geometry import LineString, Point
 你可以从以下代码中了解已定义的类与用法：{rag_snippets}
-3. **结构要求**：
-   - geometry.snippet 定义一级场景：主车的位置，和运动方向.并告诉我准确的是基于哪个真实数据集，读取这个真实数据集名称,这个名称用[ ]标注出来。
-   - spawn.snippet 定义初始车辆（主车和对抗车的类型、相对位置、朝向等信息。
-   - behavior.snippet 描述车辆的行为（主车和对抗车）
-5. 确保三个 DSL 模块的语义与润色后的自然语言描述一致，DSL 中每个元素都应有清晰语义映射。
 
 以下是你之前生成的 DSL 模块示例（记忆库）： {few_shot_examples}
 
@@ -185,7 +200,7 @@ from shapely.geometry import LineString, Point
         response = client.chat.completions.create(
             model=model_name,
             messages=[
-                {"role": "system", "content": "You are an expert in generating Scenic DSL from driving scene descriptions."},
+                {"role": "system", "content": "You are an expert in generating DSL from driving scene descriptions."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.4
@@ -220,6 +235,11 @@ from shapely.geometry import LineString, Point
         geometry_snippets.append("")
         spawn_snippets.append("")
         behavior_snippets.append("")
+
+# === 保存 original 与 file_info 的配对为 JSON 文件 ===
+pair_json_path = os.path.join(ROOT_DIR, "Corpus/Description/description_fileinfo_pairs.json")
+with open(pair_json_path, "w", encoding="utf-8") as f:
+    json.dump(description_fileinfo_pairs, f, indent=2, ensure_ascii=False)
 
 # === 保存 Scenic snippet 模板库 ===
 dir_path = os.path.dirname(template_path)
