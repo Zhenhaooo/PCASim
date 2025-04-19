@@ -1,5 +1,6 @@
 import os
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -23,7 +24,7 @@ import time
 
 
 # === Step 1: 读取数据 ===
-xlsx_path = "final_snippet_export.xlsx"
+xlsx_path = os.path.join(ROOT_DIR, 'Corpus/Description/final_snippet_export.xlsx')
 sheets = pd.read_excel(xlsx_path, sheet_name=None)
 
 rag_docs = []
@@ -128,126 +129,23 @@ Below are two examples of the input testing scenario texts and the corresponding
 
 
 
-LLM Input1:{{Ego vehicle approaches a four-way intersection intending to make an unprotected left turn. Multiple oncoming vehicles maintain straight trajectories through the junction at moderate speeds. Ego must yield right-of-way to all crossing traffic before initiating turning maneuver.}}
-
+LLM Input1:{{}}
 LLM output1:{{
-IntersectionRegion = PolylineRegion([
-    Point(road[0].lanes[0].centerline[10]),
-    Point(road[1].lanes[0].centerline[10]),
-    Point(road[2].lanes[0].centerline[10]), 
-    Point(road[3].lanes[0].centerline[10])
-]).buffer(15)
 
-ego = new Car with behavior YieldLeftTurnBehavior,
-    at road[1].lanes[0].centerline[5],
-    facing road[1].direction
-
-param oncoming_count = Range(2,4)
-for i in range(oncoming_count):
-    new Car as OncomingVehicle with:
-        behavior FollowLaneBehavior(target_speed=Uniform(15,25)),
-        at road[0].lanes[-1].centerline[-50] offset Uniform(-0.5,0.5),
-        facing road[0].direction
-
-class YieldLeftTurnBehavior(Behavior):
-    def __init__(self, yield_distance=20, safe_gap=3):
-        self.yield_zone = IntersectionRegion
-        self.safety_margin = safe_gap
-
-    def step(self):
-        conflict_cars = [v for v in visibleObjects() 
-            if isinstance(v, OncomingVehicle) 
-            and v.position.distanceTo(self.agent.position) < 30]
-
-        if len(conflict_cars) > 0:
-            self.agent.setThrottle(0)
-            self.agent.setBraking(0.8)
-        else:
-            steering = lane_centering_steer(self.agent)
-            throttle = speed_maintenance_control(self.agent, 10)
-            self.agent.setSteering(steering)
-            self.agent.setThrottle(throttle)
 }}
 
 
 
-LLM Input2:{{At a signalized intersection, the ego vehicle executes a right-turn maneuver from the dedicated turning lane. A bicycle emerges from the adjacent bike lane on the right side, exhibiting lateral oscillation that may lead to unexpected incursion into the vehicular traffic lane. The ego must implement defensive yielding protocols including speed modulation and right-of-way assessment to ensure collision-free negotiation.}}
-
+LLM Input2:{{}}
 LLM output2:{{
-# Define bicycle operation zone with lateral buffer
-bikeCorridor = RectangularRegion(
-    road.rightEdge.offsetBy(1.5),
-    width=1.2,
-    height=10,
-    heading=roadDirection
-)
 
-# Right-turn lane geometry specification 
-turnLane = road.lanes[-1]  # Rightmost lane as turning lane
-
-# Ego positioning in dedicated turn lane
-ego = new Car with behavior YieldToBikeBehavior(),
-    at turnLane.start.offsetAlong(5),
-    facing turnLaneDirection
-
-# Bicycle with probabilistic lane incursion
-bike = new Bicycle at bikeCorridor,
-    with speed (1.5, 2.5),
-    with behavior LateralDriftBehavior(
-        baseSpeed=1.8,
-        lateralShift=(0.3, 0.7),
-        shiftProbability=0.4
-    )
-
-class YieldToBikeBehavior(Behavior):
-    def __init__(self, reactionDistance=8):
-        super().__init__()
-        self.safeMargin = 2.5
-        self.reactionDist = reactionDistance
-
-    def step(self):
-        bike = findClosest(type=Bicycle, maxDistance=15)
-        if bike and self.checkConflict(bike):
-            self.applyYieldProtocol(bike)
-        else:
-            self.maintainCourse()
-
-    def checkConflict(self, bike):
-        return (bike.distanceTo(ego) < self.reactionDist and 
-                abs(bike.position.x - ego.position.x) < self.safeMargin)
-
-    def applyYieldProtocol(self, bike):
-        speedDiff = ego.speed - bike.speed
-        decel = (speedDiff**2)/(2*self.reactionDist) if speedDiff > 0 else 0
-        ego.setThrottle(max(0, 0.5 - decel/2))
-        ego.setSteering(0.1)  # Gentle steering away from bike lane
-
-# Bicycle-specific motion pattern
-class LateralDriftBehavior(Behavior):
-    def __init__(self, baseSpeed, lateralShift, shiftProbability):
-        self.baseSpeed = baseSpeed
-        self.shiftRange = lateralShift
-        self.shiftProb = shiftProbability
-
-    def step(self):
-        if self.probability(self.shiftProb):
-            lateral = self.uniform(*self.shiftRange)
-            newPos = self.owner.position.offsetBy(lateral, 90)
-            if newPos in bikeCorridor:
-                self.owner.position = newPos
-        self.owner.setSpeed(self.baseSpeed)
 }}
 
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
 
 Based on the above description and examples, convert the following testing scenario text into the corresponding scenario representation:
 
-{The scenario takes place at an intersection in a complex urban environment. The ego vehicle, a sedan, is initially located at coordinates (0, 0) and intends to drive straight through the intersection. The intersection is temporarily closed and includes a slow lane designation, indicating restricted maneuverability.
-
-The surrounding traffic density is high, with approximately 50 other vehicles present. Weather conditions are clear, but despite dry road surfaces, visibility is low, posing a perception challenge for the ego vehicle.
-
-Adversarial elements in the environment include sudden braking requirements, an emergency roadblock that disrupts normal traffic flow, and a construction zone that alters the road layout. These combined factors test the ego vehicle’s ability to safely navigate under constrained and dynamic urban conditions.
-}
+{}
 
 give me the code please!
 """
@@ -444,7 +342,7 @@ def structured_voting_pipeline_clustered(question, rag_chain, num_votes=5, delay
         print(f" - 聚类 {i+1} 包含 {len(cl)} 个样本")
 
     largest_cluster = max(clusters, key=len)
-    print(f"\n✅ 选中聚类（大小={len(largest_cluster)}）作为最终投票候选")
+    print(f"\n 选中聚类（大小={len(largest_cluster)}）作为最终投票候选")
 
     # 字段级投票
     field_values = defaultdict(list)

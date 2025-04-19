@@ -7,6 +7,7 @@ pip install scikit-learn
 """
 import os
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'  # 使用镜像源
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -26,11 +27,11 @@ from collections import defaultdict, Counter
 import time
 from difflib import SequenceMatcher
 
-from dsl_to_env_generator import convert_dsl_to_highway_env_code
+from dsl_to_env_generator_test import convert_dsl_to_highway_env_code
 
 
-# === Step 1: 读取数据 ===
-xlsx_path = "final_snippet_export.xlsx"
+# === 读取数据 ===
+xlsx_path = os.path.join(ROOT_DIR, 'Corpus/Description/final_snippet_export.xlsx')
 sheets = pd.read_excel(xlsx_path, sheet_name=None)
 
 rag_docs = []
@@ -57,11 +58,10 @@ for i in range(len(sheets["chatstyle.description"])):
     except Exception as e:
         print(f"[{i}] 跳过异常数据: {e}")
 
-# === Step 2: 文本切分与向量索引 ===
+# === 文本切分与向量索引 ===
 splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
 docs = splitter.create_documents(rag_docs)
 
-# 使用镜像源或本地路径加载模型
 embedding_model = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2"  # 或改用本地路径 "./models/all-MiniLM-L6-v2"
 )
@@ -69,7 +69,7 @@ embedding_model = HuggingFaceEmbeddings(
 vectorstore = FAISS.from_documents(docs, embedding_model)
 retriever = vectorstore.as_retriever()
 
-# === Step 3: 严格嵌入 CoT + Semantic Check Prompt ===
+# === 严格嵌入 CoT + Semantic Check Prompt ===
 cot_prompt = PromptTemplate.from_template("""
 You are an expert in autonomous driving testing and simulation.
 
@@ -137,8 +137,7 @@ rag_chain = RetrievalQA.from_chain_type(
     return_source_documents=True
 )
 
-# === Step 5: 示例问题 ===
-# query = "Assuming you are an expert in autonomous driving testing, your task is to generate scenario representation from the following given testing scenario description text based on the Domain-Specific Language."
+# === 问题 ===
 query = """
 Assuming you are an expert in autonomous driving testing, your task is to generate scenario representation from the following given testing scenario description text based on the Domain-Specific Language.
 
@@ -150,150 +149,127 @@ Few-Shot
 
 Below are two examples of the input testing scenario texts and the corresponding scenario representations:
 
-
-
-LLM Input1:{{In this intersection scenario, the ego vehicle maintains a straight trajectory while executing braking maneuvers. The road environment features a slow-speed lane without temporary traffic control modifications. The scenario incorporates high traffic density with approximately 50 vehicles. Two adversarial vehicles are positioned to the left of the ego vehicle, both exhibiting dangerous tailgating behavior at critically close distances (1.38m and 0.55m respectively). This configuration creates a challenging situation where the ego vehicle must navigate through dense traffic while responding to immediate rear threats from aggressive followers.}}
+LLM Input1:{{In the intersection scenario analysis from the [vehicle_tracks_000_trajectory_set_27.json] dataset, the ego vehicle demonstrates a straight-line braking maneuver under normal lane conditions without temporary traffic pattern changes. The adversarial environment features high traffic density (50 vehicles) with two critical interactions: 
+- Adversarial vehicle 1 positioned rearward executes a sudden brake maneuver with 1.22s reaction latency
+- Adversarial vehicle 2 approaching laterally from the left initiates sudden braking with 1.93s reaction delay}}
 LLM output1:{{
 #------geometry.snippet------#
-from NGSIM_env.road.lane import StraightLane, LineType
-from NGSIM_env.road.road import RoadNetwork
-
-network = RoadNetwork()
-intersection_center = (0, 0)
-lane_width = 3.5
-
-# Intersection approach lane (slow speed)
-approach_lane = StraightLane([-100, 0], [100, 0],
-                           line_types=(LineType.CONTINUOUS, LineType.CONTINUOUS),
-                           width=lane_width,
-                           speed_limit=8)  # slow speed limit
-network.add_lane("north", "south", approach_lane)
-
-# Define intersection boundaries
-intersection_start = -15
-intersection_end = 15
+IntersectionScenario: 
+    road_network = RoadNetwork.from_real_dataset(
+        dataset='vehicle_tracks_000_trajectory_set_27.json',
+        lane_types=[StraightLane, StraightLane]
+    )
+    
+ego = Car:
+    lane = road_network.get_lane(lane_index=0)
+    initial_position = lane.center_at(30.0)  # Mid-intersection approach
+    heading = lane.heading_at(30.0)
 
 #------spawn.snippet------#
-from NGSIM_env.vehicle.behavior import IDMVehicle
-from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
-
-# Ego vehicle approaching intersection
-ego = HumanLikeVehicle on approach_lane at (intersection_start - 25, 0),
-    with speed 6 m/s,
-    heading 0 deg,
-    behavior=intersection_approach
-
-# Aggressive tailgating vehicles
-adversary1 = HumanLikeVehicle on approach_lane.left_lane at (intersection_start - 23.623, 1.05),
-    with speed 6.5 m/s,
-    heading 0 deg,
-    behavior=close_tailgating_left
-
-adversary2 = HumanLikeVehicle on approach_lane.left_lane at (intersection_start - 24.453, 1.05),
-    with speed 7 m/s,
-    heading 0 deg,
-    behavior=extremely_close_tailgating
-
-# High density background traffic
-background_vehicles = []
-for i in range(50):  # high traffic density
-    background_vehicles.append(IDMVehicle on network.random_lane())
+ego_vehicle = HumanLikeVehicle:
+    lane = ego.lane
+    position = ego.initial_position
+    heading = ego.heading
+    behavior_type = IDMBehavior
+    
+adv_vehicle1 = InterActionVehicle: 
+    lane = ego.lane
+    position = ego.initial_position + (-25.0, 0.0)  # 25m rear offset
+    speed = 12.0  # Approaching from behind
+    target_speed = 8.0
+    
+adv_vehicle2 = InterActionVehicle:
+    lane = road_network.get_lane(lane_index=1)
+    position = ego.initial_position + (0.0, 3.5)  # Left adjacent lane
+    speed = 10.5  # Lateral approach speed
+    lane_offset = 2.0
     
 #------behavior.snippet------#
-from NGSIM_env.vehicle.controller import ControlledVehicle
-
-behavior intersection_approach:
-    when ego.position.x < intersection_start:
-        ego.control = ControlledVehicle.keep_lane()
-    else:
-        ego.control = ControlledVehicle.brake(intensity=0.5)  # cautious braking
-
-behavior close_tailgating_left:
-    adversary1.target_speed = ego.speed * 1.08
-    adversary1.control = ControlledVehicle.lane_following(distance=1.38)  # dangerous following
-
-behavior extremely_close_tailgating:
-    adversary2.target_speed = ego.speed * 1.15
-    adversary2.control = ControlledVehicle.lane_following(distance=0.55)  # extremely dangerous
+ego_behavior = IDMBehavior:
+    target_speed = 30.0
+    normal_acceleration = 2.0
+    emergency_deceleration = -4.5  # Braking magnitude
+    
+adv1_behavior = SuddenBrakeBehavior:
+    trigger_distance = 20.0  # Activation threshold
+    reaction_time = 1.224
+    deceleration_profile = [-3.0, -4.0, -5.0]  # Progressive braking
+    
+adv2_behavior = LateralBrakeBehavior:
+    lateral_offset = 3.5
+    reaction_delay = 1.928 
+    max_deceleration = -6.0
+    steering_effect = 0.15  # Lateral movement during brake
     
 }}
 
 
 
-LLM Input2:{{In the intersection scenario, the ego vehicle maintains a straight trajectory while executing a braking maneuver. The road section features special lane markings but no temporary traffic control measures. The traffic density is low with only 5 background vehicles present. Two adversarial vehicles create challenging conditions: 
-1) Adversary 1 is positioned on the right side of the ego vehicle at an unsafe following distance of approximately 1.5 meters (tailgating behavior)
-2) Adversary 2 approaches from the rear attempting an aggressive left lane change at a distance of about 3 meters. The scenario tests the ego vehicle's ability to handle simultaneous rear and side threats while maintaining proper intersection approach protocol.}}
+LLM Input2:{{In the intersection scenario analysis, the ego vehicle exhibits straight-path braking behavior within a slow-type lane configuration without temporary traffic modifications. The environment features medium traffic density with 20 surrounding vehicles. Critical adversarial interactions include:  
+- Adversarial Vehicle 1 positioned ahead performing an unsafe right lane change (lateral offset: 2.97m)  
+- Adversarial Vehicle 2 preceding the ego vehicle while speeding with velocity increment of 11.33m/s  
+This scenario reconstruction is based on trajectory patterns from the [vehicle_tracks_000_trajectory_set_67.json] dataset.}}
 LLM output2:{{
 #------geometry.snippet------#
-from NGSIM_env.road.lane import StraightLane, LineType
-from NGSIM_env.road.road import RoadNetwork
+IntersectionScenario:
+    road_network = RoadNetwork.from_real_dataset(
+        dataset='vehicle_tracks_000_trajectory_set_67.json',
+        lane_types=[StraightLane, StraightLane],
+        lane_speed_limits={'slow': 30.0}
+    )
+    
+ego = Car:
+    lane = road_network.get_lane(lane_index=0)
+    initial_position = lane.center_at(55.0)  # Conflict zone alignment
+    heading = lane.heading_at(55.0)
+    lane_spec = 'slow'  # Original lane classification
 
-network = RoadNetwork()
-intersection_center = (0, 0)
-lane_width = 3.5
-
-# Intersection approach lane with special markings
-approach_lane = StraightLane([-100, 0], [100, 0],
-                           line_types=(LineType.SPECIAL, LineType.SPECIAL),
-                           width=lane_width,
-                           speed_limit=10)
-network.add_lane("north", "south", approach_lane)
-
-# Define intersection boundaries
-intersection_start = -15
-intersection_end = 15
 #------spawn.snippet------#
-from NGSIM_env.vehicle.behavior import IDMVehicle
-from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
-
-# Ego vehicle approaching intersection
-ego = HumanLikeVehicle on approach_lane at (intersection_start - 25, 0),
-    with speed 8 m/s,
-    heading 0 deg,
-    behavior=intersection_approach
-
-# Right-side tailgating adversary
-adversary1 = HumanLikeVehicle on approach_lane.right_lane at (intersection_start - 23.513, -1.05),
-    with speed 8.5 m/s,
-    heading 0 deg,
-    behavior=close_tailgating_right
-
-# Rear adversary attempting left lane change
-adversary2 = HumanLikeVehicle on approach_lane at (intersection_start - 28, 0),
-    with speed 9 m/s,
-    heading 0 deg,
-    behavior=aggressive_left_change
-
-# Low density background traffic
-background_vehicles = []
-for i in range(5):
-    background_vehicles.append(IDMVehicle on network.random_lane())
+ego_vehicle = HumanLikeVehicle:
+    lane = ego.lane
+    position = ego.initial_position
+    heading = ego.heading
+    target_speed = 25.0  # Initial speed from braking pattern
+    behavior_type = IDMBehavior
+    
+adv_vehicle1 = InterActionVehicle:
+    lane = road_network.get_lane(lane_index=0)
+    position = ego_vehicle.position + (8.0, 0.0)  # Front position
+    speed = 22.0  # Approaching speed
+    lateral_offset = 3.0  # Dataset-calculated 2.97m
+    
+adv_vehicle2 = InterActionVehicle:
+    lane = road_network.get_lane(lane_index=0)
+    position = ego_vehicle.position + (15.0, 0.0)  # Leading position
+    speed = ego_vehicle.target_speed + 11.33  # Speed differential
+    acceleration_profile = [2.5, 3.0]
     
 #------behavior.snippet------#
-from NGSIM_env.vehicle.controller import ControlledVehicle
-
-behavior intersection_approach:
-    when ego.position.x < intersection_start:
-        ego.control = ControlledVehicle.keep_lane()
-    else:
-        ego.control = ControlledVehicle.brake(intensity=0.6)  # controlled braking
-
-behavior close_tailgating_right:
-    adversary1.target_speed = ego.speed * 1.1
-    adversary1.control = ControlledVehicle.lane_following(distance=1.5)  # dangerous tailgating
-
-behavior aggressive_left_change:
-    when distanceTo(ego) < 30:
-        adversary2.control = ControlledVehicle.lane_change(direction='left', aggressive=True)
-        adversary2.target_speed = ego.speed * 1.2
-        adversary2.min_lateral_distance = 3.0  # close proximity change
+ego_behavior = IDMBehavior:
+    min_gap = 3.2  # Conservative spacing
+    emergency_deceleration = -5.2  # Observed braking magnitude
+    reaction_time = 1.35  # Response delay
+    
+adv1_behavior = SuddenLaneChangeBehavior:
+    trigger_condition = DistanceThreshold(8.0)
+    direction = 'right'
+    lateral_acceleration = 0.78  # m/s²
+    max_offset = 3.0  # Final lateral displacement
+    
+adv2_behavior = SpeedingBehavior:
+    speed_increment = 11.33
+    acceleration_phases = [
+        (0-2s: 2.5 m/s²),
+        (2s+: 3.0 m/s²)
+    ]
+    speed_maintain_duration = 5.0
 }}
 
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
 
 Based on the above description and examples, convert the following testing scenario text into the corresponding scenario representation:
 
-{In the intersection scenario, the ego vehicle exhibits braking behavior while attempting to proceed straight through the junction. The simulation environment features a temporary road closure at the intersection, with the ego vehicle occupying a slow-speed lane. The scenario incorporates medium traffic density with approximately 20 vehicles in the vicinity. Two adversarial vehicles are present: Vehicle [1] is positioned to the left of the ego vehicle and performs an unsafe lane change to the right (lateral offset: 1.05 meters). Vehicle [2] follows behind the ego vehicle and executes an unsafe lane change to the left (lateral offset: 1.00 meters), creating a potentially hazardous situation.}
+{In an urban intersection scenario reconstructed from the [vehicle_tracks_000_trajectory_set_28.json] dataset, the ego vehicle exhibits consecutive braking maneuvers while maintaining straight-line motion through a fast-lane section with temporary traffic control measures. The medium-density traffic environment (20 vehicles) introduces two adversarial agents: Adversarial Vehicle 1 executes an unsafe leftward lane change from the right adjacent lane at 3.61m lateral distance, while Adversarial Vehicle 2 performs sudden braking maneuvers with 2.75s delayed response time on the same lateral plane.}
 
 give me the code please!
 """
@@ -346,25 +322,21 @@ def self_consistent_rag_chain_embedding(question, rag_chain, num_votes=5, delay=
         print("无有效输出，结束。")
         return None, []
 
-    # === Step 1: 嵌入建模 ===
     print("\n\n==================== 开始计算嵌入相似度矩阵 ====================\n")
     model = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = model.encode(all_answers)
     sim_matrix = cosine_similarity(embeddings)
 
-    # === Step 2: 平均相似度（每个答案与其他答案的相似度均值） ===
     avg_sim = sim_matrix.mean(axis=1)
     best_idx = int(np.argmax(avg_sim))
     final_answer = all_answers[best_idx]
 
-    # === Step 3: 打印所有答案及其相似度 ===
     print("\n==================== 所有采样结果及相似度统计 ====================\n")
     for i, (ans, sim) in enumerate(zip(all_answers, avg_sim)):
         print(f"\n--- Answer {i+1} ---")
         print(f"[平均相似度] -> {sim:.4f}")
-        print(ans[:500] + ("..." if len(ans) > 500 else ""))  # 可调显示长度
+        print(ans[:500] + ("..." if len(ans) > 500 else ""))
 
-    # === Step 4: 最终选择结果 ===
     print(f"\n==================== 最终 Voting 结果（第 {best_idx+1} 个输出） ====================\n")
     print(final_answer)
 
@@ -531,7 +503,6 @@ def structured_voting_pipeline_clustered(question, rag_chain, num_votes=5, delay
 #
 #     return final_dsl
 
-
 def parse_dsl_fields(dsl_text):
     fields = {}
     match_behavior = re.search(r'ego\s*=\s*new\s+Car\s+with\s+behavior\s+(\w+)', dsl_text)
@@ -554,12 +525,10 @@ def parse_dsl_fields(dsl_text):
 def rebuild_dsl_from_fields(fields):
     lines = []
 
-    # 1. Intersection 区域
     if "intersection" in fields:
         lines.append(fields["intersection"])
         lines.append("")
 
-    # 2. Ego 实体定义
     behavior = fields.get("ego_behavior", "DefaultBehavior")
     position = fields.get("ego_position", "road[0].lanes[0].centerline[0]")
     lines.append(f"ego = new Car with behavior {behavior},")
@@ -567,14 +536,12 @@ def rebuild_dsl_from_fields(fields):
     lines.append(f"    facing road[0].direction")
     lines.append("")
 
-    # 3. 参数定义
     for key, val in fields.items():
         if key.startswith("param_"):
             name = key[len("param_"):]
             lines.append(f"param {name} = {val}")
     lines.append("")
 
-    # 4. 行为类定义
     for key, cls in fields.items():
         if key.startswith("class_behavior_"):
             lines.append(f"class {cls}(Behavior):")

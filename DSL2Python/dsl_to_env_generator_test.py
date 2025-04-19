@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader
@@ -10,12 +11,12 @@ from langchain.schema import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 
-# ==== 0. 构建或加载 GitHub highway-env 示例代码索引 ====
-def load_highway_code_index(index_path="highway_code_index"):
+# ==== 构建或加载示例代码索引 ====
+def load_highway_code_index(index_path=os.path.join(ROOT_DIR, "highway_code_index")):
     if os.path.exists(index_path):
         return FAISS.load_local(index_path, HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L6-v2"),allow_dangerous_deserialization=True)
 
-    repo_path = "highway-env"
+    repo_path = os.path.join(ROOT_DIR, "env")
     # if not os.path.exists(repo_path):
         # os.system(f"git clone https://github.com/eleurent/highway-env {repo_path}")
 
@@ -33,7 +34,7 @@ def load_highway_code_index(index_path="highway_code_index"):
         except:
             continue
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
     chunks = splitter.split_documents(all_docs)
 
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L6-v2")
@@ -65,8 +66,20 @@ Instructions:
 4. Return a complete and executable Python script, nothing else.
 5. Format the output cleanly with imports and spacing.
 6. Include a `if __name__ == '__main__'` block for launching the scenario if applicable.
-7. Add all necessary imports such as Vehicle, Road, Lane, etc. from the simulator modules.
+7. Ensure all necessary imports such as Vehicle, Road, Lane, etc. from the simulator modules are included at the top.(例如:
+from NGSIM_env import utils
+from NGSIM_env.envs.common.abstract import AbstractEnv
+from NGSIM_env.road.road import Road, RoadNetwork
+from NGSIM_env.vehicle.behavior import IDMVehicle
+from NGSIM_env.vehicle.humandriving import HumanLikeVehicle, InterActionVehicle, Pedestrian, IntersectionHumanLikeVehicle
+from NGSIM_env.road.lane import LineType, StraightLane, PolyLane, PolyLaneFixedWidth
+from NGSIM_env.utils import *
+import pickle
+import lanelet2
+from threading import Thread
+from shapely.geometry import LineString, Point)
 8. Ensure the output code compiles in Python 3.8+.
+
 
 Here is the natural language description of the DSL:
 In the intersection scenario, the ego vehicle exhibits braking behavior while attempting to proceed straight through the junction. The simulation environment features a temporary road closure at the intersection, with the ego vehicle occupying a slow-speed lane. The scenario incorporates medium traffic density with approximately 20 vehicles in the vicinity. Two adversarial vehicles are present: Vehicle [1] is positioned to the left of the ego vehicle and performs an unsafe lane change to the right (lateral offset: 1.05 meters). Vehicle [2] follows behind the ego vehicle and executes an unsafe lane change to the left (lateral offset: 1.00 meters), creating a potentially hazardous situation.
@@ -83,7 +96,7 @@ def call_llm_for_code(prompt: str) -> str:
         openai_api_key="sk-4d8332cd221a45d9b505e5f93d7122b2",
         openai_api_base="https://api.deepseek.com/v1",
         model="deepseek-reasoner",
-        temperature=0.6
+        temperature=0.4
     )
     return llm.invoke(prompt).content
 
@@ -127,10 +140,10 @@ def try_run_generated_scenario(path: str) -> None:
 
 # 主函数
 def convert_dsl_to_highway_env_code(dsl_text: str,
-                                    output_file: str = "auto_scenario_llm.py",
+                                    output_file: str = "./output/auto_scenario_llm.py",
                                     max_debug_attempts: int = 3) -> str:
     code_index = load_highway_code_index()
-    rag_context = code_index.similarity_search(dsl_text, k=3)
+    rag_context = code_index.similarity_search(dsl_text, k=5)
     debug_attempt = 1
     fix_hint = None
 
@@ -166,75 +179,72 @@ pip install gymnasium
 
 if __name__ == "__main__":
     final_answer = """
+```python
+{
 #------geometry.snippet------#
-from NGSIM_env.road.lane import StraightLane, LineType
-from NGSIM_env.road.road import RoadNetwork
-
-network = RoadNetwork()
-intersection_center = (0, 0)
-lane_width = 3.5
-
-# Slow-speed lane with temporary closure
-approach_lane = StraightLane([-100, 0], [100, 0],
-                           line_types=(LineType.CONTINUOUS, LineType.CONTINUOUS),
-                           width=lane_width,
-                           speed_limit=8)  # Reduced speed for closure
-network.add_lane("north", "south", approach_lane)
-
-# Define intersection boundaries
-intersection_start = -15
-intersection_end = 15
+"IntersectionScenario": {
+    "road_network": "RoadNetwork.from_real_dataset("
+                    "dataset='vehicle_tracks_000_trajectory_set_28.json',"
+                    "lane_types=[StraightLane, StraightLane],"
+                    "lane_speed_limits={'fast': 45.0},"
+                    "temporary_control=True)"
+},
 
 #------spawn.snippet------#
-from NGSIM_env.vehicle.behavior import IDMVehicle
-from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
+"ego_vehicle": {
+    "type": "HumanLikeVehicle",
+    "lane": "road_network.get_lane(lane_index=0)",
+    "position": "lane.center_at(40.0)",  # Fast-lane positioning
+    "behavior_type": "IDMBehavior",
+    "target_speed": 40.0
+},
 
-# Ego vehicle with braking behavior
-ego = HumanLikeVehicle on approach_lane at (intersection_start - 25, 0),
-    with speed 6 m/s,
-    heading 0 deg,
-    behavior=intersection_braking
+"adv_vehicle1": {
+    "type": "InterActionVehicle",
+    "lane": "road_network.get_lane(lane_index=1)",  # Right adjacent lane
+    "position": "ego_vehicle.position + (0.0, 3.61)",  # Lateral offset
+    "speed": 38.0,
+    "lateral_behavior": "SuddenLaneChangeBehavior"
+},
 
-# Left-side adversary making unsafe right change
-adversary1 = HumanLikeVehicle on approach_lane.left_lane at (intersection_start - 23.5, 1.05),
-    with speed 7 m/s,
-    heading 0 deg,
-    behavior=aggressive_right_change
-
-# Rear adversary making unsafe left change
-adversary2 = HumanLikeVehicle on approach_lane at (intersection_start - 28, 0),
-    with speed 7.5 m/s,
-    heading 0 deg,
-    behavior=aggressive_left_change
-
-# Medium density background traffic
-background_vehicles = []
-for i in range(20):
-    background_vehicles.append(IDMVehicle on network.random_lane())
+"adv_vehicle2": {
+    "type": "InterActionVehicle",
+    "lane": "road_network.get_lane(lane_index=0)",  # Same lateral plane
+    "position": "ego_vehicle.position + (-18.0, 0.0)",  # Rear position
+    "speed": 42.0,
+    "longitudinal_behavior": "SuddenBrakeBehavior"
+},
 
 #------behavior.snippet------#
-from NGSIM_env.vehicle.controller import ControlledVehicle
+"ego_behavior": {
+    "type": "IDMBehavior",
+    "emergency_deceleration": -5.8,  # Consecutive braking magnitude
+    "brake_activation_threshold": 1.8
+},
 
-behavior intersection_braking:
-    when ego.position.x < intersection_start:
-        ego.control = ControlledVehicle.keep_lane()
-    else:
-        ego.control = ControlledVehicle.brake(intensity=0.55)  # Moderate braking
+"adv1_behavior": {
+    "type": "SuddenLaneChangeBehavior",
+    "direction": "left",
+    "lateral_acceleration": 0.85,
+    "trigger_distance": 15.0,
+    "max_offset": 3.61  # Dataset-specified lateral displacement
+},
 
-behavior aggressive_right_change:
-    adversary1.target_speed = ego.speed * 1.15
-    adversary1.control = ControlledVehicle.lane_change(
-        direction='right', 
-        aggressive=True,
-        min_lateral_distance=1.05  # Unsafe lateral offset
-    )
+"adv2_behavior": {
+    "type": "SuddenBrakeBehavior",
+    "reaction_time": 2.75,  # Specified delay
+    "deceleration_profile": [-3.5, -4.2, -6.0],
+    "activation_speed": 42.0
+}
+}
+``` 
 
-behavior aggressive_left_change:
-    adversary2.target_speed = ego.speed * 1.25
-    adversary2.control = ControlledVehicle.lane_change(
-        direction='left',
-        aggressive=True,
-        min_lateral_distance=1.00  # Close proximity maneuver
-    )
+**Consistency Verification:**
+1. Temporary traffic control explicitly declared in road_network parameters
+2. Fast-lane speed limit (45.0) matches scenario context
+3. adv_vehicle1's 3.61m lateral offset preserved in both position offset and max_offset
+4. adv_vehicle2's same lateral plane enforced through lane_index=0 assignment
+5. Consecutive braking represented through emergency_deceleration parameter
+6. All behavioral elements (SuddenLaneChangeBehavior/SuddenBrakeBehavior) maintained from repository
     """
     convert_dsl_to_highway_env_code(final_answer)
