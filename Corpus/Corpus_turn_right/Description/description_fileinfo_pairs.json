@@ -1,0 +1,14 @@
+[
+  {
+    "original_description": "In the intersection scenario, the ego vehicle is executing a right-turn maneuver at a signalized intersection under normal traffic conditions (lane type: fast lane, no temporary road changes). The adversarial conditions feature low traffic density with 5 surrounding vehicles. Specifically: \n1) Adversarial vehicle [1] positioned ahead of the ego vehicle performs sudden braking with a reaction time of 1.73 seconds\n2) Adversarial vehicle [2] approaches from the left side attempting an unsafe lane change (left-directional, with 3.19 meters lateral displacement). This scenario is reconstructed from the real-world dataset [vehicle_tracks_011_trajectory_set_17.json] capturing right-turn behaviors.",
+    "file_name": "vehicle_tracks_011_trajectory_set_17.json"
+  },
+  {
+    "original_description": "In the intersection scenario, the ego vehicle executes a right-turn maneuver at a signalized intersection with temporary traffic control measures. The designated lane for this maneuver is classified as a slow-speed lane. The traffic density is medium, with approximately 20 vehicles in the vicinity. \n\nTwo adversarial vehicles are present: \n1) Adversary Vehicle 1 is positioned to the left of the ego vehicle and will perform sudden braking with a reaction time of 1.09 seconds. \n2) Adversary Vehicle 2 approaches from the rear and initiates an unsafe left lane change at a relative distance of 3.82 meters. \n\nThis scenario is reconstructed from the real-world dataset [vehicle_tracks_005_trajectory_set_100.json], capturing typical urban intersection dynamics.",
+    "file_name": "vehicle_tracks_005_trajectory_set_100.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle executes a right turn maneuver at a signalized intersection with temporary road closure conditions. The lane type is designated as special due to construction work. The adversarial environment features high traffic density (50 vehicles) with two notable conflict vehicles: \n1) Adversarial Vehicle 1 performs an unsafe right lane change from the left adjacent lane with a lateral distance of 3.91 meters\n2) Adversarial Vehicle 2 tailgates dangerously close from the rear with only 0.86 meters following distance. This scenario is reconstructed from real-world driving data [vehicle_tracks_012_trajectory_set_82.json] capturing right-turn behaviors under congested conditions.",
+    "file_name": "vehicle_tracks_012_trajectory_set_82.json"
+  }
+]

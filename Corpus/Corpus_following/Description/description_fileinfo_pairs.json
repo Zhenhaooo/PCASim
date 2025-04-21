@@ -1,0 +1,206 @@
+[
+  {
+    "original_description": "In the intersection scenario, the ego vehicle is following a lead vehicle under temporary traffic control conditions, where the lane is designated as a special type. The traffic density is low, with approximately 5 vehicles in the vicinity. Two adversarial vehicles are introduced:  \n- Adversarial Vehicle 1 is positioned to the **right** of the ego vehicle and exhibits **tailgating** behavior (distance: 0.58 meters).  \n- Adversarial Vehicle 2 is located to the **left** of the ego vehicle and also demonstrates **tailgating** behavior (distance: 1.16 meters).  \n\nThis scenario is derived from the real-world dataset [vehicle_tracks_000_trajectory_set_100.json], which captures vehicle trajectories in a following context.  \n\n---",
+    "file_name": "vehicle_tracks_000_trajectory_set_100.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle while maintaining a safe distance in a slow-speed lane. The scene exhibits medium traffic density with approximately 20 vehicles present. Two adversarial vehicles introduce challenging conditions: \n1) Adversarial Vehicle 1 positioned on the right initiates an unsafe lane change maneuver towards the left with a lateral distance of 4.12 meters\n2) Adversarial Vehicle 2 on the left exhibits aggressive speeding behavior with a significant speed increase of 13.94 m/s. The scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_101.json], preserving the original traffic dynamics and spatial relationships.",
+    "file_name": "vehicle_tracks_000_trajectory_set_101.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under temporary road closure conditions, with the lane designated as a fast-moving lane. The simulation introduces high traffic density (50 vehicles) with two adversarial vehicles exhibiting dangerous behaviors: \n1) Adversarial Vehicle 1 approaches from the rear at an aggressively increased speed (+8.74 m/s relative to the ego vehicle)\n2) Adversarial Vehicle 2 performs an unsafe right lane change at 2.3 meters ahead of the ego vehicle. The scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_102.json] captured in car-following conditions.",
+    "file_name": "vehicle_tracks_000_trajectory_set_102.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under special lane conditions with a temporary road closure. The traffic density is high with approximately 50 vehicles in the vicinity. Two adversarial vehicles are present on the left side of the ego vehicle, both exhibiting aggressive speeding behaviors. The first adversarial vehicle increases its speed by 6.69 m/s relative to the ego vehicle, while the second shows an even more dangerous speed increase of 12.47 m/s. This scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_104.json], capturing complex urban intersection dynamics.",
+    "file_name": "vehicle_tracks_000_trajectory_set_104.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is following a lead vehicle in a special-purpose lane. The scene exhibits medium traffic density (approximately 20 vehicles). Two adversarial vehicles are present: \n1) An aggressive vehicle positioned to the right of the ego vehicle, executing an unsafe leftward lane change maneuver with a lateral offset of approximately 4.1 meters.\n2) A tailgating vehicle closely following the ego vehicle from behind, maintaining an unsafe following distance of about 1.17 meters. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_106.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_106.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a fast lane under normal traffic conditions without temporary road changes. The traffic density is low with a total of 5 vehicles present. Two adversarial vehicles are introduced to create challenging conditions: \n1) A front vehicle that performs sudden braking with a reaction time of 2.44 seconds\n2) A right-side vehicle executing an unsafe leftward lane change at a distance of 4.1 meters from the ego vehicle. This scenario is reconstructed from the real-world driving dataset [vehicle_tracks_000_trajectory_set_109.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_109.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is traveling in a designated slow lane while following a lead vehicle. The traffic density is low with approximately 5 vehicles in the vicinity. Two adversarial vehicles create challenging conditions: \n1) An aggressive vehicle positioned to the right initiates an unsafe leftward lane change maneuver at a distance of 4.1 meters\n2) A tailgating vehicle directly ahead maintains an dangerously close following distance of 0.55 meters. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_115.json] capturing complex intersection interactions.",
+    "file_name": "vehicle_tracks_000_trajectory_set_115.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in the fast lane under low traffic density conditions (5 vehicles total). The scenario features two adversarial vehicles exhibiting dangerous behaviors: \n1) Adversary 1 positioned on the right initiates an unsafe leftward lane change at a relative distance of 2.25 meters\n2) Adversary 2 ahead performs an unsafe rightward lane change at 1.06 meters proximity. This configuration is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_131.json], capturing a critical intersection approach scenario with multiple conflict points.",
+    "file_name": "vehicle_tracks_000_trajectory_set_131.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a slow lane under normal traffic conditions without temporary road changes. The environment features high traffic density with approximately 50 vehicles. Two adversarial vehicles are present: \n1) A tailgating vehicle positioned 1.39 meters to the right-rear of the ego vehicle\n2) A vehicle performing an unsafe left lane change 3.92 meters ahead of the ego vehicle\nThis scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_133.json], preserving the original traffic dynamics and spatial relationships.",
+    "file_name": "vehicle_tracks_000_trajectory_set_133.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a slow lane under normal traffic conditions without temporary road changes. The environment features high traffic density with approximately 50 vehicles. Two adversarial vehicles are positioned behind the ego vehicle: \n1) An aggressive vehicle performing an unsafe right lane change at a distance of 2.22 meters\n2) A tailgating vehicle maintaining dangerously close proximity of 0.89 meters\nThis scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_134.json] capturing typical following behavior in dense traffic conditions.",
+    "file_name": "vehicle_tracks_000_trajectory_set_134.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in a special lane under high traffic density conditions (50 vehicles). The scenario features two adversarial vehicles: \n1) A front vehicle that will execute a sudden brake maneuver after a 1.12s reaction time\n2) A rear vehicle performing an unsafe right lane change at a dangerous following distance of 1.6m. \nThis scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_146.json], capturing complex interaction patterns in constrained intersection environments.",
+    "file_name": "vehicle_tracks_000_trajectory_set_146.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a fast lane under normal traffic conditions without temporary road changes. The traffic density is medium with approximately 20 vehicles in the vicinity. Two adversarial vehicles are present: \n1) A tailgating vehicle positioned 0.89 meters to the right of the ego vehicle\n2) A speeding vehicle approaching from the rear with a velocity increase of 9.55 m/s relative to the ego vehicle's speed. This scenario is reconstructed from the real-world driving dataset [vehicle_tracks_000_trajectory_set_147.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_147.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is traveling in a fast lane while following a lead vehicle. The scenario features medium traffic density (approximately 20 vehicles). Two primary adversarial conditions are present: \n1) An adversarial vehicle on the left performing an unsafe lane change maneuver (lateral distance: 1.54m)\n2) Another adversarial vehicle on the left exhibiting tailgating behavior (following distance: 0.95m). \nThis scenario is reconstructed from the real-world driving dataset [vehicle_tracks_000_trajectory_set_157.json], capturing typical urban intersection dynamics with regulatory modifications.",
+    "file_name": "vehicle_tracks_000_trajectory_set_157.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle while approaching a temporarily closed intersection in the fast lane. The traffic density is low with only 5 vehicles present. Two adversarial vehicles create challenging conditions: \n1) An adversarial vehicle positioned to the right of the ego vehicle will execute a sudden brake maneuver after a 2.5-second reaction time\n2) A rear adversarial vehicle will perform an unsafe lane change to the right while maintaining an aggressive following distance of approximately 3.4 meters. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_17.json], capturing complex interaction dynamics at signalized intersections.",
+    "file_name": "vehicle_tracks_000_trajectory_set_17.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under normal lane conditions without temporary traffic changes. The environment features medium traffic density with approximately 20 vehicles. Two adversarial vehicles are present: \n1) A left-side tailgater maintaining an unsafe following distance of 1.21 meters behind the ego vehicle\n2) A right-side vehicle that will execute sudden braking after a 2.54-second reaction time. \nThis scenario is reconstructed from the real-world driving dataset [vehicle_tracks_000_trajectory_set_18.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_18.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is navigating through a slow lane while following a lead vehicle. The simulation environment features high traffic density (50 vehicles) with two primary adversarial conditions: \n1) A front adversarial vehicle exhibiting aggressive speeding behavior (speed increase of 7.37 m/s relative to ego)\n2) A rear vehicle performing unsafe lane changes to the right with minimal safety distance (1.26m gap). \nThis scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_23.json], capturing complex urban intersection dynamics under special traffic controls.",
+    "file_name": "vehicle_tracks_000_trajectory_set_23.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic controls, the ego vehicle is following a lead vehicle in a normal lane under high traffic density conditions (50 vehicles). Two adversarial vehicles are present: \n1) A front vehicle exhibiting aggressive speeding behavior (speed increase of 12.56 m/s relative to ego)\n2) A rear vehicle demonstrating dangerous speeding (speed increase of 10.04 m/s relative to ego). \nThe scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_27.json], capturing complex urban intersection dynamics.",
+    "file_name": "vehicle_tracks_000_trajectory_set_27.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic controls, the ego vehicle is traveling in a slow lane while following a lead vehicle. The road environment features high traffic density (50 vehicles) with specific adversarial conditions: \n1) An adversarial vehicle in front maintains dangerously close following distance (0.59m tailgating gap)\n2) A left-side adversarial vehicle demonstrates aggressive speeding behavior (14.25m/s speed increase relative to ego). This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_28.json], capturing typical car-following behaviors under temporary traffic controls.",
+    "file_name": "vehicle_tracks_000_trajectory_set_28.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a special lane with no temporary traffic changes. The traffic density is high with approximately 50 vehicles in the vicinity. Two adversarial vehicles create challenging conditions: \n1) An adversarial vehicle positioned in front performs an unsafe lane change to the right with an initial lateral offset of 4.8 meters\n2) Another adversarial vehicle on the left engages in dangerous tailgating behavior with only 0.61 meters following distance. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_29.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_29.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under normal lane conditions without temporary traffic changes. The environment features medium traffic density with approximately 20 vehicles. Two adversarial vehicles are present: \n1) A front vehicle aggressively tailgating the ego with an unsafe following distance of 0.75 meters\n2) A left-side vehicle exhibiting dangerous speeding behavior with a velocity increase of 8.73 m/s relative to the ego. This scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_3.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_3.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a special lane with no temporary road changes. The traffic density is low with 5 vehicles present. Two adversarial vehicles are introduced: \n1) A rear vehicle that is significantly speeding (speed increase of 14.21 m/s relative to ego)\n2) A left-side vehicle that will execute a sudden brake maneuver after a 2.09 second reaction time\nThe scenario is based on real-world driving data from the [vehicle_tracks_000_trajectory_set_33.json] dataset.",
+    "file_name": "vehicle_tracks_000_trajectory_set_33.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is traveling in a slow lane while following a lead vehicle. The road geometry indicates special traffic controls are in effect. Two adversarial vehicles are present: \n1) A front vehicle exhibiting aggressive speeding behavior (10.15 m/s speed increase relative to ego)\n2) A rear vehicle with sudden braking capability (triggered after 2.05 seconds reaction time)\nThe scenario features high traffic density (50 vehicles) and is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_37.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_37.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a special lane with no temporary traffic changes. The scenario features high traffic density (50 vehicles) with two adversarial conditions: \n1) An adversarial vehicle ahead performing an unsafe left lane change at a distance of 1.02 meters \n2) An adversarial vehicle to the left that will execute a sudden brake maneuver after a 2.11 second reaction time. The scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_45.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_45.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a slow lane under normal traffic conditions without temporary road changes. The traffic density is low with a total of 5 vehicles present. Two adversarial vehicles are introduced to create challenging conditions: \n1) Adversary 1 is positioned to the right of the ego vehicle and will execute a sudden braking maneuver after a reaction time of 2.92 seconds\n2) Adversary 2 is positioned to the left of the ego vehicle and will execute a sudden braking maneuver after a shorter reaction time of 1.25 seconds. This scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_48.json] representing typical following behavior in urban intersections.",
+    "file_name": "vehicle_tracks_000_trajectory_set_48.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under temporary road closure conditions with normal lane markings. The traffic density is low with only 5 vehicles present. Two adversarial vehicles are introduced to create challenging conditions: \n1) A right-side vehicle exhibiting aggressive speeding behavior with a speed increase of 7.18 m/s relative to the ego vehicle\n2) A front vehicle performing an unsafe leftward lane change at a distance of 3.03 meters from the ego vehicle. The scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_59.json], preserving the original spatial relationships and motion patterns.",
+    "file_name": "vehicle_tracks_000_trajectory_set_59.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is following a lead vehicle in a special-purpose lane under medium traffic density conditions (approximately 20 vehicles in the vicinity). The scenario introduces two adversarial vehicles with distinct threat patterns: \n1) A tailgating vehicle positioned dangerously close (0.88m) to the ego's rear\n2) A left-side vehicle exhibiting sudden braking behavior with a delayed reaction time of 1.31 seconds after stimulus detection. This configuration creates a complex driving situation requiring simultaneous attention to forward collision avoidance and rear-end collision mitigation while complying with special lane regulations.",
+    "file_name": "vehicle_tracks_000_trajectory_set_6.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is traveling in a fast lane while following a lead vehicle. The scenario features medium traffic density (approximately 20 vehicles). Two adversarial conditions are present: \n1) A rear vehicle performing sudden braking with a reaction time of 2.02 seconds\n2) A left-side vehicle aggressively tailgating the ego vehicle at an unsafe distance of 0.57 meters. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_63.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_63.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in a special lane under low traffic density conditions (5 vehicles total). Two adversarial vehicles are present: \n1) Adversary vehicle [1] positioned to the left of the ego vehicle will execute a sudden braking maneuver after a 2.48s reaction time\n2) Adversary vehicle [2] positioned ahead of the ego vehicle will execute a sudden braking maneuver after a 1.06s reaction time. \nThe scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_66.json] with special lane compliance requirements.",
+    "file_name": "vehicle_tracks_000_trajectory_set_66.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a slow lane with no temporary road changes. The traffic density is medium with approximately 20 vehicles in the vicinity. Two adversarial vehicles are introduced to create challenging conditions: \n1) A left-side vehicle that performs sudden braking with a reaction time of 1.72 seconds\n2) A front vehicle that aggressively speeds up with a velocity increase of 12.06 m/s\nThis scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_67.json], capturing typical following behaviors in urban intersection environments.",
+    "file_name": "vehicle_tracks_000_trajectory_set_67.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in a special lane under high traffic density conditions (50 vehicles). Two adversarial vehicles are present: \n1) A rear vehicle performing an unsafe lane change to the right with a lateral distance of 1.46m\n2) A right-side vehicle tailgating at an unsafe distance of 1.12m. \nThe scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_71.json], featuring rule-compliant behavior in special lane conditions with adversarial interactions.",
+    "file_name": "vehicle_tracks_000_trajectory_set_71.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under normal lane conditions without temporary traffic changes. The environment features medium traffic density with approximately 20 vehicles. Two adversarial vehicles are positioned to the left of the ego vehicle, both programmed to execute sudden braking maneuvers after specific reaction times (2.11s and 2.12s respectively). This scenario is reconstructed from the real-world driving dataset [vehicle_tracks_000_trajectory_set_73.json], capturing typical car-following behavior with unexpected braking events.",
+    "file_name": "vehicle_tracks_000_trajectory_set_73.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a fast lane under normal traffic conditions without temporary road changes. The traffic density is low with only 5 vehicles present. Two adversarial vehicles are introduced to create challenging conditions: \n1) Adversarial Vehicle 1 is positioned to the right of the ego vehicle and exhibits speeding behavior with a significant speed increase of 11.47 m/s\n2) Adversarial Vehicle 2 is also located on the right side and performs an unsafe lane change maneuver to the right at a distance of 3.62 meters from the ego vehicle. This scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_8.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_8.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle under temporary traffic control conditions in a normal lane. The traffic density is medium with approximately 20 vehicles in the vicinity. Two adversarial vehicles create challenging conditions: \n1) A right-side vehicle exhibiting aggressive speeding behavior with a speed increase of 10.24 m/s relative to the ego vehicle\n2) A left-side vehicle performing dangerous tailgating with only 1.08 meters following distance\nThis scenario is reconstructed from real-world driving data recorded in dataset [vehicle_tracks_000_trajectory_set_80.json], capturing a typical car-following situation with adversarial interactions.",
+    "file_name": "vehicle_tracks_000_trajectory_set_80.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a slow lane with no temporary road changes. The traffic density is medium with approximately 20 vehicles in the vicinity. Two adversarial vehicles are present: \n1) An unsafe lane-changing vehicle positioned to the left of the ego vehicle at a distance of 4.83 meters, attempting a leftward lane change maneuver\n2) A tailgating vehicle also located to the left, maintaining an unsafe following distance of 1.45 meters behind the ego vehicle. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_83.json].",
+    "file_name": "vehicle_tracks_000_trajectory_set_83.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle in a fast lane under normal traffic conditions without temporary road changes. The traffic density is low with approximately 5 vehicles in the vicinity. Two adversarial vehicles are present: \n1) A rear vehicle that will execute a sudden braking maneuver after a reaction time of 1.96 seconds\n2) A right-side vehicle that exhibits aggressive speeding behavior with a speed increase of 12.05 m/s relative to the ego vehicle. This scenario is reconstructed from the real-world driving dataset [vehicle_tracks_000_trajectory_set_91.json], capturing typical following interactions at intersections.",
+    "file_name": "vehicle_tracks_000_trajectory_set_91.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in a special lane under high traffic density conditions (50 vehicles). Two adversarial vehicles are positioned behind the ego vehicle, both attempting unsafe right lane changes at different distances (1.31m and 3.92m respectively). This scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_92.json], simulating challenging urban driving conditions with regulatory constraints.",
+    "file_name": "vehicle_tracks_000_trajectory_set_92.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control, the ego vehicle is traveling in a fast lane while following a lead vehicle. The road environment features medium traffic density with approximately 20 vehicles. Two adversarial vehicles are present: \n1) An aggressive vehicle on the left performing an unsafe lane change maneuver with a lateral distance of 4.37 meters from the ego vehicle\n2) Another aggressive vehicle on the right executing an unsafe lane change at a distance of 3.77 meters. \nThis scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_95.json], capturing typical car-following behavior under temporary traffic control conditions.",
+    "file_name": "vehicle_tracks_000_trajectory_set_95.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in the fast lane under low traffic density conditions (5 vehicles total). The scenario features two adversarial vehicles exhibiting dangerous behaviors: \n1) Adversary 1 is positioned to the left of the ego vehicle at an unsafe following distance of 1.32 meters (tailgating)\n2) Adversary 2 is directly behind the ego vehicle at an extremely dangerous distance of 0.63 meters (aggressive tailgating). \nThis scenario is reconstructed from the real-world dataset [vehicle_tracks_000_trajectory_set_98.json], capturing a critical intersection approach situation with multiple traffic rule violations.",
+    "file_name": "vehicle_tracks_000_trajectory_set_98.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is navigating through a fast lane while following a lead vehicle under low traffic density conditions (5 vehicles total). The scenario introduces two adversarial vehicles exhibiting dangerous behaviors: \n1) Adversary 1 positioned on the right initiates an unsafe leftward lane change at a distance of 3.06 meters\n2) Adversary 2 approaching from the rear performs an unsafe rightward lane change at 4.25 meters following distance. \nThis scenario is reconstructed from the real-world driving dataset [vehicle_tracks_001_trajectory_set_1.json], capturing complex interaction patterns at controlled intersections.",
+    "file_name": "vehicle_tracks_001_trajectory_set_1.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in the fast lane under low traffic density conditions (5 vehicles total). Two adversarial vehicles are positioned behind the ego vehicle, both attempting unsafe right lane changes at different distances (4.8m and 3.5m respectively). The scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_10.json], featuring characteristic fast-lane following behavior with emergent lane-change conflicts.",
+    "file_name": "vehicle_tracks_001_trajectory_set_10.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is following a lead vehicle in a special-purpose lane under medium traffic density conditions (approximately 20 vehicles in the vicinity). Two adversarial vehicles exhibit dangerous sudden braking behaviors with different reaction times: \n1) Right-side adversary with 2.21s reaction delay\n2) Left-side adversary with 1.60s reaction delay\nThe scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_13.json], preserving the original spatial relationships and kinematic profiles.",
+    "file_name": "vehicle_tracks_001_trajectory_set_13.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is navigating a fast lane while following a lead vehicle. The road environment features medium traffic density (approximately 20 vehicles). Two adversarial vehicles are positioned in front of the ego vehicle with dangerous tailgating behaviors: Adversary 1 maintains an unsafe following distance of 1.05 meters, while Adversary 2 follows even closer at 0.80 meters. This scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_15.json], capturing a critical car-following situation under special traffic controls.",
+    "file_name": "vehicle_tracks_001_trajectory_set_15.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is traveling in a slow lane while following a lead vehicle. The road geometry indicates medium traffic density with approximately 20 vehicles in the vicinity. Two adversarial vehicles are present: \n1) A rear vehicle performing an unsafe lane change maneuver from the right side at a distance of 4.29 meters\n2) A front vehicle executing another unsafe right lane change at 2.48 meters ahead. \nThis scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_19.json] capturing typical following behaviors in restricted intersection conditions.",
+    "file_name": "vehicle_tracks_001_trajectory_set_19.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic controls, the ego vehicle is traveling in a slow lane while following a lead vehicle. The environment features high traffic density (50 vehicles) with two adversarial vehicles exhibiting dangerous behaviors: \n1) An adversarial vehicle ahead performing an unsafe right lane change at a distance of 2.5 meters\n2) A rear adversarial vehicle that will execute sudden braking after a 2.79 second reaction time. The scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_21.json], preserving the original traffic dynamics and vehicle interactions.",
+    "file_name": "vehicle_tracks_001_trajectory_set_21.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in normal lane conditions under high traffic density (50 vehicles). Two adversarial vehicles are positioned ahead of the ego vehicle, both executing unsafe right lane changes at different distances (4.54m and 1.39m respectively). The scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_23.json], featuring complex interaction patterns typical of congested intersection approaches.",
+    "file_name": "vehicle_tracks_001_trajectory_set_23.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic control measures, the ego vehicle is traveling in a slow lane while following a lead vehicle under high traffic density conditions (50 vehicles). Two adversarial vehicles are present: \n1) A rear vehicle performing an unsafe left lane change at approximately 2.93 meters distance\n2) A front vehicle executing another unsafe left lane change at about 3.68 meters distance. \nThe scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_25.json], capturing complex interactions in controlled intersection environments.",
+    "file_name": "vehicle_tracks_001_trajectory_set_25.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary traffic controls, the ego vehicle is traveling in a slow lane while following a lead vehicle. The road environment features medium traffic density (approximately 20 vehicles). Two adversarial vehicles create challenging conditions: \n1) A rear vehicle executing an unsafe right lane change maneuver at 1.36m proximity \n2) A left-side vehicle aggressively tailgating at 0.62m following distance. This scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_27.json], capturing typical car-following behaviors under special traffic controls.",
+    "file_name": "vehicle_tracks_001_trajectory_set_27.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle in a special lane under low traffic density conditions (5 vehicles total). The scenario features two adversarial vehicles: 1) A front vehicle performing an unsafe left lane change at a distance of 4.23 meters, and 2) A right-side vehicle significantly speeding with a velocity increase of 10.92 m/s relative to the ego vehicle. This configuration tests the ego vehicle's ability to handle complex interactions in regulated intersection areas with abnormal traffic patterns.",
+    "file_name": "vehicle_tracks_001_trajectory_set_30.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle while navigating through a special lane type. The simulation introduces medium traffic density (20 vehicles) with two key adversarial conditions: \n1) A front adversarial vehicle that will execute sudden braking after 1.47 seconds reaction time\n2) A right-side adversarial vehicle that will perform sudden braking after 2.41 seconds reaction time\nThe scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_4.json] capturing typical following behaviors in constrained intersection conditions.",
+    "file_name": "vehicle_tracks_001_trajectory_set_4.json"
+  },
+  {
+    "original_description": "In this intersection scenario, the ego vehicle is following a lead vehicle while approaching a temporarily closed intersection with fast lane characteristics. The simulation environment features medium traffic density (approximately 20 vehicles). Two adversarial vehicles create challenging conditions: \n1) A right-side vehicle exhibiting aggressive speeding behavior (7.7 m/s speed increase relative to ego)\n2) A left-side vehicle performing unsafe lane change maneuvers with 3.87m lateral displacement. \nThis scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_8.json], preserving the original traffic dynamics and spatial relationships.",
+    "file_name": "vehicle_tracks_001_trajectory_set_8.json"
+  },
+  {
+    "original_description": "In this intersection scenario with temporary road closure, the ego vehicle is following a lead vehicle under normal lane conditions. The traffic density is high with approximately 50 vehicles in the vicinity. Two adversarial vehicles are positioned behind the ego vehicle, both exhibiting sudden braking behavior with different reaction times (1.45s and 2.04s respectively). This scenario is reconstructed from real-world driving data [vehicle_tracks_001_trajectory_set_9.json], focusing on car-following behavior under adversarial conditions.",
+    "file_name": "vehicle_tracks_001_trajectory_set_9.json"
+  }
+]

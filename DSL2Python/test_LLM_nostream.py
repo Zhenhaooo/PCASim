@@ -116,8 +116,8 @@ Syntax Alignment Checking:
 llm = ChatOpenAI(
     openai_api_key=api_key,
     openai_api_base="https://api.deepseek.com/v1",
-    model="deepseek-reasoner",  # "deepseek-chat" 或 "deepseek-reasoner"
-    temperature=0.6
+    model="deepseek-chat",  # "deepseek-chat" 或 "deepseek-reasoner"
+    temperature=0.4
 )
 
 
@@ -141,7 +141,13 @@ rag_chain = RetrievalQA.from_chain_type(
 )
 
 # === 问题 ===
-description_text = "In an urban intersection scenario reconstructed from the [vehicle_tracks_000_trajectory_set_28.json] dataset, the ego vehicle exhibits consecutive braking maneuvers while maintaining straight-line motion through a fast-lane section with temporary traffic control measures. The medium-density traffic environment (20 vehicles) introduces two adversarial agents: Adversarial Vehicle 1 executes an unsafe leftward lane change from the right adjacent lane at 3.61m lateral distance, while Adversarial Vehicle 2 performs sudden braking maneuvers with 2.75s delayed response time on the same lateral plane."
+description_text = '''In this intersection scenario, the ego vehicle initiates emergency braking while maintaining a straight trajectory through the intersection. The simulation environment features temporary traffic control measures and fast-moving lanes. 
+
+The scenario presents two adversarial conditions: 
+1) A vehicle performing an unsafe left lane change from the right side at 3.61m distance
+2) A following vehicle executing sudden braking with 2.75s reaction delay on the right flank. 
+
+The medium traffic density (approximately 20 vehicles) creates a complex dynamic environment where the ego vehicle must respond to both lateral and longitudinal threats.'''
 # 调用函数获取最相似的描述
 json_path = os.path.join(ROOT_DIR, "Corpus/Description/description_fileinfo_pairs.json")
 similar_descriptions = find_similar_descriptions(description_text, json_path, top_k=3)
@@ -163,120 +169,149 @@ Few-Shot
 
 Below are two examples of the input testing scenario texts and the corresponding scenario representations:
 
-LLM Input1:{{In the intersection scenario analysis from the [vehicle_tracks_000_trajectory_set_27.json] dataset, the ego vehicle demonstrates a straight-line braking maneuver under normal lane conditions without temporary traffic pattern changes. The adversarial environment features high traffic density (50 vehicles) with two critical interactions: 
-- Adversarial vehicle 1 positioned rearward executes a sudden brake maneuver with 1.22s reaction latency
-- Adversarial vehicle 2 approaching laterally from the left initiates sudden braking with 1.93s reaction delay}}
+LLM Input1:{{In this intersection scenario, the ego vehicle is executing a straight-through maneuver while initiating emergency braking. The road segment is characterized as a slow-speed lane without temporary traffic modifications. The adversarial conditions feature high traffic density (50 vehicles) with two notable threat vehicles: 
+1) Adversary [1] positioned laterally to the right of the ego vehicle, exhibiting aggressive speeding behavior with a velocity increase of 10.1 m/s
+2) Adversary [2] following closely behind the ego vehicle, demonstrating delayed reaction (1.44s) followed by sudden braking. This scenario is reconstructed from real-world driving data [vehicle_tracks_000_trajectory_set_115.json] in the brake dataset.}}
 LLM output1:{{
 #------geometry.snippet------#
-IntersectionScenario: 
-    road_network = RoadNetwork.from_real_dataset(
-        dataset='vehicle_tracks_000_trajectory_set_27.json',
-        lane_types=[StraightLane, StraightLane]
-    )
-    
-ego = Car:
-    lane = road_network.get_lane(lane_index=0)
-    initial_position = lane.center_at(30.0)  # Mid-intersection approach
-    heading = lane.heading_at(30.0)
+from NGSIM_env.road.road import Road, RoadNetwork
+from NGSIM_env.road.lane import LineType, StraightLane
+from NGSIM_env.utils import get_intersection_config
+
+# Based on [brake] dataset recording: vehicle_tracks_000_trajectory_set_115.json
+def build_scenario():
+    road = Road(network=RoadNetwork.from_map("intersection.osm"))
+    ego_direction = "go_straight"  # Straight trajectory through intersection
+    return road, ego_direction
 
 #------spawn.snippet------#
-ego_vehicle = HumanLikeVehicle:
-    lane = ego.lane
-    position = ego.initial_position
-    heading = ego.heading
-    behavior_type = IDMBehavior
+from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
+from NGSIM_env.vehicle.behavior import IDMVehicle
+
+def setup_vehicles(road):
+    # Ego vehicle (braking condition)
+    ego = HumanLikeVehicle(
+        road=road,
+        position=[50.2, 3.5],  # Intersection entry point
+        heading=0,  # Eastbound orientation
+        target_speed=8.33,  # 30 km/h initial speed
+        braking=True  # Emergency brake state
+    )
     
-adv_vehicle1 = InterActionVehicle: 
-    lane = ego.lane
-    position = ego.initial_position + (-25.0, 0.0)  # 25m rear offset
-    speed = 12.0  # Approaching from behind
-    target_speed = 8.0
+    # Adversarial vehicles
+    adv1 = IDMVehicle(
+        road=road,
+        position=[50.2, 4.6],  # 1.1m right offset
+        heading=0,
+        speed=ego.speed + 10.1  # Speeding condition
+    )
     
-adv_vehicle2 = InterActionVehicle:
-    lane = road_network.get_lane(lane_index=1)
-    position = ego.initial_position + (0.0, 3.5)  # Left adjacent lane
-    speed = 10.5  # Lateral approach speed
-    lane_offset = 2.0
+    adv2 = HumanLikeVehicle(
+        road=road,
+        position=[45.5, 3.5],  # 4.7m rear offset
+        heading=0,
+        speed=ego.speed,
+        reaction_time=1.44  # Delayed response
+    )
+    
+    return ego, [adv1, adv2]
     
 #------behavior.snippet------#
-ego_behavior = IDMBehavior:
-    target_speed = 30.0
-    normal_acceleration = 2.0
-    emergency_deceleration = -4.5  # Braking magnitude
+from NGSIM_env.vehicle.controller import ControlledVehicle
+
+def configure_behavior(ego, adversaries):
+    # Ego emergency braking profile
+    ego.target_speed = 0
+    ego.braking_intensity = 1.0  # Full braking
     
-adv1_behavior = SuddenBrakeBehavior:
-    trigger_distance = 20.0  # Activation threshold
-    reaction_time = 1.224
-    deceleration_profile = [-3.0, -4.0, -5.0]  # Progressive braking
+    # Adversary [1] speeding parameters
+    adversaries[0].policy_params.update({
+        'speed_deviation': 10.1,
+        'a': 3.5,  # High acceleration
+        'delta': 5  # Aggressive speed adaptation
+    })
     
-adv2_behavior = LateralBrakeBehavior:
-    lateral_offset = 3.5
-    reaction_delay = 1.928 
-    max_deceleration = -6.0
-    steering_effect = 0.15  # Lateral movement during brake
+    # Adversary [2] braking behavior
+    adversaries[1].behavior.update({
+        'braking_probability': 1.0,
+        'reaction_time': 1.44,
+        'deceleration': 6.0  # Hard braking
+    })
+    
+    # Traffic density simulation
+    road.vehicle_density = 0.85  # ~50 vehicles in 100m radius
     
 }}
 
 
 
-LLM Input2:{{In the intersection scenario analysis, the ego vehicle exhibits straight-path braking behavior within a slow-type lane configuration without temporary traffic modifications. The environment features medium traffic density with 20 surrounding vehicles. Critical adversarial interactions include:  
-- Adversarial Vehicle 1 positioned ahead performing an unsafe right lane change (lateral offset: 2.97m)  
-- Adversarial Vehicle 2 preceding the ego vehicle while speeding with velocity increment of 11.33m/s  
-This scenario reconstruction is based on trajectory patterns from the [vehicle_tracks_000_trajectory_set_67.json] dataset.}}
+LLM Input2:{{In this intersection scenario captured from the [brake] dataset (recording: vehicle_tracks_000_trajectory_set_134.json), the ego vehicle initiates an emergency braking maneuver while maintaining a straight trajectory through the intersection. The road segment is characterized as a fast lane without temporary traffic modifications. The simulation features high traffic density with approximately 50 vehicles in the vicinity. Two adversarial vehicles exhibit dangerous tailgating behaviors: 
+1) Adversary 1 positioned 0.93 meters to the left of the ego vehicle with aggressive following distance
+2) Adversary 2 maintaining an unsafe 0.86-meter gap to the right. This configuration creates a critical situation requiring immediate collision avoidance measures.}}
 LLM output2:{{
 #------geometry.snippet------#
-IntersectionScenario:
-    road_network = RoadNetwork.from_real_dataset(
-        dataset='vehicle_tracks_000_trajectory_set_67.json',
-        lane_types=[StraightLane, StraightLane],
-        lane_speed_limits={'slow': 30.0}
-    )
-    
-ego = Car:
-    lane = road_network.get_lane(lane_index=0)
-    initial_position = lane.center_at(55.0)  # Conflict zone alignment
-    heading = lane.heading_at(55.0)
-    lane_spec = 'slow'  # Original lane classification
+from NGSIM_env.road.road import Road, RoadNetwork
+from NGSIM_env.road.lane import LineType, StraightLane
+from NGSIM_env.utils import get_intersection_config
+
+# Based on [brake] dataset recording: vehicle_tracks_000_trajectory_set_134.json
+def build_scenario():
+    road = Road(network=RoadNetwork.from_map("intersection.osm"))
+    ego_direction = "go_straight"  # Straight trajectory through intersection
+    return road, ego_direction
 
 #------spawn.snippet------#
-ego_vehicle = HumanLikeVehicle:
-    lane = ego.lane
-    position = ego.initial_position
-    heading = ego.heading
-    target_speed = 25.0  # Initial speed from braking pattern
-    behavior_type = IDMBehavior
+from NGSIM_env.vehicle.humandriving import HumanLikeVehicle
+from NGSIM_env.vehicle.behavior import IDMVehicle
+
+def setup_vehicles(road):
+    # Ego vehicle (emergency braking)
+    ego = HumanLikeVehicle(
+        road=road,
+        position=[50.2, 3.5],  # Intersection entry point
+        heading=0,  # Eastbound
+        target_speed=8.33,  # 30 km/h initial speed
+        braking=True  # Emergency brake state
+    )
     
-adv_vehicle1 = InterActionVehicle:
-    lane = road_network.get_lane(lane_index=0)
-    position = ego_vehicle.position + (8.0, 0.0)  # Front position
-    speed = 22.0  # Approaching speed
-    lateral_offset = 3.0  # Dataset-calculated 2.97m
+    # Adversary 1 (left-side tailgating)
+    adv1 = HumanLikeVehicle(
+        road=road,
+        position=[50.2, 2.57],  # 0.93m left offset
+        heading=0,
+        speed=ego.speed,
+        min_gap=0.93  # Unsafe following distance
+    )
     
-adv_vehicle2 = InterActionVehicle:
-    lane = road_network.get_lane(lane_index=0)
-    position = ego_vehicle.position + (15.0, 0.0)  # Leading position
-    speed = ego_vehicle.target_speed + 11.33  # Speed differential
-    acceleration_profile = [2.5, 3.0]
+    # Adversary 2 (right-side tailgating)
+    adv2 = HumanLikeVehicle(
+        road=road,
+        position=[50.2, 4.357],  # 0.857m right offset
+        heading=0,
+        speed=ego.speed,
+        min_gap=0.86  # Dangerous proximity
+    )
     
+    return ego, [adv1, adv2]
+
 #------behavior.snippet------#
-ego_behavior = IDMBehavior:
-    min_gap = 3.2  # Conservative spacing
-    emergency_deceleration = -5.2  # Observed braking magnitude
-    reaction_time = 1.35  # Response delay
+from NGSIM_env.vehicle.controller import ControlledVehicle
+
+def configure_behavior(ego, adversaries):
+    # Ego emergency braking profile
+    ego.target_speed = 0
+    ego.braking_intensity = 1.0  # Full braking
     
-adv1_behavior = SuddenLaneChangeBehavior:
-    trigger_condition = DistanceThreshold(8.0)
-    direction = 'right'
-    lateral_acceleration = 0.78  # m/s²
-    max_offset = 3.0  # Final lateral displacement
+    # Configure tailgating behaviors
+    for i, adv in enumerate(adversaries):
+        adv.behavior.update({
+            'safety_distance': 0.9 - (0.03*i),  # Progressive risk increase
+            'aggressiveness': 1.7 + (0.1*i),  # Escalating aggression
+            'min_gap': adv.min_gap  # Maintain unsafe distances
+        })
     
-adv2_behavior = SpeedingBehavior:
-    speed_increment = 11.33
-    acceleration_phases = [
-        (0-2s: 2.5 m/s²),
-        (2s+: 3.0 m/s²)
-    ]
-    speed_maintain_duration = 5.0
+    # Set high traffic density
+    road.vehicle_density = 0.85  # ~50 vehicles in simulation area
 }}
 
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
