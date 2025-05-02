@@ -114,7 +114,7 @@ python train_ego.py
 7、Evaluate
 
 ```
-python train_model.py
+python test_model.py
 python evaluation.py
 ```
 
