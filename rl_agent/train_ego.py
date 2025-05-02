@@ -10,8 +10,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from AdvCollisionEnv import AdvCollisionEnv
 
 # ==========================================================
-JSON_ROOT   = "data/json_train"
-OSM_PATH    = "data/map/DR_USA_Intersection_MA.osm"
+JSON_ROOT   = "Data/json_train"
+OSM_PATH    = "Data/map/DR_USA_Intersection_MA.osm"
 ADV_MODEL   = "adv_checkpoints/ppo_adv_model_ep_213.zip"
 MODEL_DIR   = "ego_checkpoints"
 MODEL_PREF  = "ppo_ego_model"

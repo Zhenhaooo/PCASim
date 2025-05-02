@@ -11,9 +11,9 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from AdvCollisionEnv import AdvCollisionEnv
 
 # ========== 配置 ==========
-JSON_ROOT = "data/json_train"
+JSON_ROOT = "Data/json_train"
 SCENE_TYPES = ["brake", "go_straight", "turn", "lane_change"]
-OSM_PATH = "data/map/DR_USA_Intersection_MA.osm"
+OSM_PATH = "Data/map/DR_USA_Intersection_MA.osm"
 MODEL_DIR = "adv_checkpoints"
 MODEL_PREFIX = "ppo_adv_model"
 TOTAL_EPISODES = 2000
