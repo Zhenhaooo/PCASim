@@ -7,7 +7,7 @@ Key contributions
 - **Multi-driver scenario corpus** Data-, knowledge-, and adversarial-driven tags are fused from the INTERACTION dataset, yielding a rich three-layer corpus.
 - **RAG-enhanced DSL generation** Retrieval + Few-shot + Chain-of-Thought + self-consistency voting produce structured `geometry / spawn / behavior` DSL snippets.
 - **DSL → Python compiler** A FAISS index of highway-env code fragments is retrieved into prompts; iterative syntax repair yields runnable scripts.
-- **Two-phase PPO training** Adversary vehicles are trained first, then frozen; the ego agent is trained next and post-smoothed via Bézier convex optimisation.
+- **Two-phase PPO RL Validation** Adversary vehicles are trained first, then frozen; the ego agent is trained next and post-smoothed via Bézier convex optimisation.
 
 
 
