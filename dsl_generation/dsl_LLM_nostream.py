@@ -152,31 +152,58 @@ for item in similar_descriptions:
     print(f"Description: {item['Description']}")
     print(f"Similarity: {item['Similarity']:.4f}\n")
 
-query = """
+# === 提取示例并生成对应输出 ===
+# 先从 similar_descriptions 获取输入
+input1 = similar_descriptions[0]['Description']
+input2 = similar_descriptions[1]['Description']
+
+try:
+    row_idx1 = sheets["chatstyle.description"].iloc[:, 0].tolist().index(input1)
+    row_idx2 = sheets["chatstyle.description"].iloc[:, 0].tolist().index(input2)
+except ValueError as e:
+    print(f"查找描述对应行时出错: {e}")
+    row_idx1, row_idx2 = None, None
+
+def get_scenario_representation(row_idx):
+    if row_idx is None:
+        return '{}'
+    geometry = sheets["geometry.snippet"].iloc[row_idx, 0]
+    spawn = sheets["spawn.snippet"].iloc[row_idx, 0]
+    behavior = sheets["behavior.snippet"].iloc[row_idx, 0]
+    return {
+        "geometry": geometry,
+        "spawn": spawn,
+        "behavior": behavior
+    }
+
+output1 = get_scenario_representation(row_idx1)
+output2 = get_scenario_representation(row_idx2)
+
+# 场景库占位内容
+scenario_repository = "你的Hierarchical Scenario Repository字典内容"
+
+
+query = f"""
 Assuming you are an expert in autonomous driving testing, your task is to generate scenario representation from the following given testing scenario description text based on the Domain-Specific Language.
 
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
 
-{Dictionary of Hierarchical Scenario Repository}
+{scenario_repository}
 
 Few-Shot
 
 Below are two examples of the input testing scenario texts and the corresponding scenario representations:
 
-LLM Input1:{{}}
-LLM output1:{{
+LLM Input1:{{{input1}}}
+LLM output1:{{{output1}}}
 
-}}
-
-LLM Input2:{{}}
-LLM output2:{{
-
-}}
+LLM Input2:{{{input2}}}
+LLM output2:{{{output2}}}
 
 The Hierarchical Scenario Repository provides a dictionary of scenario components corresponding to each element that you can choose from. When creating scenario representation, please first consider the following elements for each subcomponent. If there is no element that can describe a similar meaning, then create a new element yourself.
 
 Based on the above description and examples, convert the following testing scenario text into the corresponding scenario representation:
-{}
+{description_text}
 
 give me the code please!
 """
