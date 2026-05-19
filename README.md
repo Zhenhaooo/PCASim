@@ -159,4 +159,14 @@ python evaluation.py
 
 
 ## 📄 Citation
-
+```
+@misc{zhang2026pcasimpromptableclosedloopadversarial,
+      title={PCASim: Promptable Closed-loop Adversarial Simulation for Urban Traffic Environment}, 
+      author={Chuancheng Zhang and Zhenhao Wang and Kaizheng Li and Yaran Lin and Qiang Guo and Bin Jiang},
+      year={2026},
+      eprint={2605.15654},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2605.15654}, 
+}
+```
